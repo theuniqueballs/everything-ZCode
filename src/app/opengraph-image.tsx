@@ -4,6 +4,9 @@ export const alt = 'Everything ZCode — конфиги для ZCode / Z.ai';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+/** force-static — обязателен для output: 'export' (GitHub Pages build). */
+export const dynamic = 'force-static';
+
 /** Static OG image: dark card, emerald gradient wordmark, toolkit stats. */
 export default function OpengraphImage() {
   return new ImageResponse(
