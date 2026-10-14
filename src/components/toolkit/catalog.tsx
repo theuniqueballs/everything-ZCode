@@ -49,6 +49,7 @@ import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
 import { Highlight } from './highlight';
 import { SectionHeading } from './section-heading';
+import { Hint } from './hint';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { parseFrontmatter, formatBytes } from '@/lib/frontmatter';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -127,17 +128,6 @@ function MetaBadges({ item }: { item: ToolkitItem }) {
         </Badge>
       )}
     </div>
-  );
-}
-
-function Hint({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side="bottom" className="font-medium">
-        {label}
-      </TooltipContent>
-    </Tooltip>
   );
 }
 
@@ -913,6 +903,21 @@ export function ToolkitCatalogSection() {
                     )}
                   </button>
                 </Hint>
+                {query.trim().length > 0 && (
+                  <Hint label={t('catalog.zipSearchTitle', { n: filtered.length })}>
+                    <button
+                      type="button"
+                      aria-label={t('catalog.zipSearchTitle', { n: filtered.length })}
+                      onClick={() =>
+                        downloadItemsZip(filtered, `ezc-search-${query.trim().slice(0, 24).replace(/[^a-zA-Zа-яА-ЯёЁ0-9-]+/gi, '-')}.zip`)
+                      }
+                      className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-border bg-card px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    >
+                      <FileArchive className="h-3.5 w-3.5" />
+                      ZIP
+                    </button>
+                  </Hint>
+                )}
               </div>
               <div
                 onKeyDown={onListKeyDown}

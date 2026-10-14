@@ -61,6 +61,14 @@ const DICT: Record<string, Entry> = {
   'day.badge': { ru: 'Конфиг дня', en: 'Config of the day' },
   'day.open': { ru: 'Открыть', en: 'Open' },
   'day.lines': { ru: '{n} строк', en: '{n} lines' },
+  'day.prevDay': { ru: 'Предыдущий день', en: 'Previous day' },
+  'day.nextDay': { ru: 'Следующий день', en: 'Next day' },
+  'day.backToToday': { ru: 'Вернуться к сегодняшнему конфигу', en: 'Back to today’s config' },
+  'day.rel.today': { ru: 'Сегодня', en: 'Today' },
+  'day.rel.yesterday': { ru: 'Вчера', en: 'Yesterday' },
+  'day.rel.tomorrow': { ru: 'Завтра', en: 'Tomorrow' },
+  'day.rel.ago': { ru: '{n} дн. назад', en: '{n} day(s) ago' },
+  'day.rel.in': { ru: 'через {n} дн.', en: 'in {n} day(s)' },
 
   /* ---- Categories ---- */
   'cat.all': { ru: 'Все', en: 'All' },
@@ -122,6 +130,7 @@ const DICT: Record<string, Entry> = {
     en: 'Focus search — press /',
   },
   'catalog.found': { ru: 'Найдено:', en: 'Found:' },
+  'catalog.zipSearchTitle': { ru: 'Скачать найденные конфиги ZIP-архивом ({n})', en: 'Download the found configs as a ZIP archive ({n})' },
   'catalog.navHint': { ru: '↑/↓ или j/k — навигация', en: '↑/↓ or j/k — navigate' },
   'catalog.emptyFav': {
     ru: 'В избранном пока пусто — добавьте конфиги звёздочкой ★',
@@ -354,6 +363,7 @@ const DICT: Record<string, Entry> = {
   'palette.shortcuts': { ru: 'Горячие клавиши', en: 'Keyboard shortcuts' },
   'palette.sections': { ru: 'Разделы', en: 'Sections' },
   'palette.recent': { ru: 'Недавние конфиги', en: 'Recent configs' },
+  'palette.similarHeading': { ru: 'Похожие на {name}', en: 'Similar to {name}' },
   'palette.compareSimilar': {
     ru: 'Diff выбранного с самым похожим',
     en: 'Diff selection with its closest match',

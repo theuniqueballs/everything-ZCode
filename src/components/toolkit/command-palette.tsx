@@ -30,6 +30,7 @@ import {
   CommandItem,
   CommandSeparator,
 } from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
 import { useUiStore } from '@/lib/store';
 import { downloadItemsZip } from '@/lib/zip';
 import { useI18n } from '@/lib/i18n';
@@ -68,15 +69,20 @@ export function CommandPalette() {
   const { recent } = useRecent();
   const [query, setQuery] = useState('');
 
-  /* Context: last selected config and its closest similar match. */
+  /* Context: last selected config, its closest match and the similar group.
+   * Falls back to the most recent config so the context survives page
+   * reloads (selection state is session-only, recents are persisted). */
   const context = useMemo(() => {
-    if (!catalog || !lastSelectedPath) return null;
+    if (!catalog) return null;
+    const contextPath = lastSelectedPath ?? recent[0] ?? null;
+    if (!contextPath) return null;
     const all = catalog.categories.flatMap((c) => c.items);
-    const current = all.find((i) => i.path === lastSelectedPath);
+    const current = all.find((i) => i.path === contextPath);
     if (!current) return null;
     const top = findSimilar(current, all, 1)[0]?.item ?? null;
-    return { current, top };
-  }, [catalog, lastSelectedPath]);
+    const similar = findSimilar(current, all, 3);
+    return { current, top, similar };
+  }, [catalog, lastSelectedPath, recent]);
 
   /* Recent configs resolved against the shared catalog (top 4). */
   const recentItems = useMemo<ToolkitItem[]>(() => {
@@ -252,6 +258,41 @@ export function CommandPalette() {
                   </span>
                 </CommandItem>
               ))}
+            </CommandGroup>
+          </>
+        )}
+
+        {/* Similar configs for the last selected item */}
+        {context && context.similar.length > 0 && (
+          <>
+            <CommandSeparator />
+            <CommandGroup
+              heading={t('palette.similarHeading', { name: context.current.name })}
+            >
+              {context.similar.map(({ item, score }) => {
+                const Icon = CATEGORY_ICONS[item.category];
+                return (
+                  <CommandItem
+                    key={item.path}
+                    value={`similar ${item.name} ${item.description} ${item.path}`}
+                    onSelect={() => openConfig(item.path)}
+                    className="gap-2"
+                  >
+                    <Icon className="mr-1 h-4 w-4 shrink-0 text-primary" />
+                    <Highlight
+                      text={item.name}
+                      query={query}
+                      className="min-w-0 font-mono text-xs font-semibold"
+                    />
+                    <Badge
+                      variant="outline"
+                      className="ml-auto h-4.5 shrink-0 border-primary/30 bg-primary/10 px-1.5 font-mono text-[10px] text-primary"
+                    >
+                      {Math.round(score * 100)}%
+                    </Badge>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </>
         )}
