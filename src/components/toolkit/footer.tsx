@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useI18n } from '@/lib/i18n';
+import { toolkitDataUrl } from '@/lib/env';
 
 export function ToolkitFooter() {
   const { t } = useI18n();
@@ -72,10 +73,10 @@ export function ToolkitFooter() {
               </li>
               <li>
                 <a
-                  href="/api/toolkit"
+                  href={toolkitDataUrl()}
                   className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  /api/toolkit
+                  {toolkitDataUrl().replace(/^https?:\/\/[^/]+/, '') || '/api/toolkit'}
                 </a>
               </li>
             </ul>

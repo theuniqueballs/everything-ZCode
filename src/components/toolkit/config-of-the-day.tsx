@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Hint } from './hint';
@@ -11,11 +11,12 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  ListTree,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUiStore } from '@/lib/store';
 import { useI18n, categoryLabelSingular } from '@/lib/i18n';
-import { shiftDateISO, pickForDate, relativeDayKind } from '@/lib/daily';
+import { shiftDateISO, pickForDate, relativeDayKind, mskDateISO } from '@/lib/daily';
 import type { DailyItem } from '@/lib/daily';
 
 export type { DailyItem };
@@ -41,9 +42,19 @@ export function ConfigOfTheDay({
 }) {
   const { lang, t } = useI18n();
   const setRequestPath = useUiStore((s) => s.setRequestPath);
+  const openDetail = useUiStore((s) => s.openDetail);
+  const [baseDate, setBaseDate] = useState(dateISO);
   const [offset, setOffset] = useState(0);
 
-  const activeDateISO = useMemo(() => shiftDateISO(dateISO, offset), [dateISO, offset]);
+  /* Static-host correctness: the baked dateISO is the BUILD date. After
+     hydration, re-anchor «today» to the visitor's real MSK date so the
+     carousel is still correct on a page served days later (GitHub Pages). */
+  useEffect(() => {
+    const real = mskDateISO();
+    if (real !== dateISO) setBaseDate(real);
+  }, []);
+
+  const activeDateISO = useMemo(() => shiftDateISO(baseDate, offset), [baseDate, offset]);
 
   /** SSR-safe pick: at offset 0 this equals the server-computed initialItem. */
   const item = useMemo(() => {
@@ -90,7 +101,18 @@ export function ConfigOfTheDay({
       : t('day.rel.in', { n });
   }, [offset, t]);
 
+  /*
+   * «Открыть» opens the global detail sheet in place — no sudden page jumps.
+   * The secondary button still scrolls to the catalog entry for context.
+   */
   const open = useCallback(
+    (path: string) => {
+      openDetail(path);
+    },
+    [openDetail],
+  );
+
+  const locateInCatalog = useCallback(
     (path: string) => {
       setRequestPath(path);
       document.querySelector('#catalog')?.scrollIntoView({ behavior: 'smooth' });
@@ -209,6 +231,17 @@ export function ConfigOfTheDay({
 
           {/* Action */}
           <div className="flex shrink-0 items-center gap-1.5 p-4 sm:p-0 sm:pr-4">
+            <Hint label={t('day.inCatalog')}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                aria-label={t('day.inCatalog')}
+                onClick={() => locateInCatalog(item.path)}
+              >
+                <ListTree className="h-4 w-4" />
+              </Button>
+            </Hint>
             <Button
               size="sm"
               variant="outline"

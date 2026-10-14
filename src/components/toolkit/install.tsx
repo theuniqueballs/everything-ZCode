@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Check, Copy, Download, FolderDown, Package, Terminal, FileArchive } from 'lucide-react';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 import { downloadItemsZip } from '@/lib/zip';
+import { toolkitDataUrl } from '@/lib/env';
 import { useI18n } from '@/lib/i18n';
 import { StaggerGroup, StaggerItem } from './motion-primitives';
 import { SectionHeading } from './section-heading';
@@ -124,7 +125,7 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
   const { lang, t } = useI18n();
   const downloadAll = async () => {
     try {
-      const res = await fetch('/api/toolkit');
+      const res = await fetch(toolkitDataUrl());
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       const blob = new Blob([JSON.stringify(json.data, null, 2)], { type: 'application/json' });

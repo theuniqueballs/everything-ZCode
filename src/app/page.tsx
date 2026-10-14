@@ -7,6 +7,7 @@ import { ToolkitConcepts } from '@/components/toolkit/concepts';
 import { CommandPalette } from '@/components/toolkit/command-palette';
 import { CompareDialog } from '@/components/toolkit/compare-dialog';
 import { ShortcutsDialog } from '@/components/toolkit/shortcuts-dialog';
+import { ItemDetailSheet } from '@/components/toolkit/item-detail-sheet';
 import { BackToTop } from '@/components/toolkit/back-to-top';
 import { ToolkitInstall } from '@/components/toolkit/install';
 import { ToolkitPrinciples } from '@/components/toolkit/best-practices';
@@ -66,6 +67,7 @@ export default function Home() {
       <CommandPalette />
       <CompareDialog />
       <ShortcutsDialog />
+      <ItemDetailSheet />
       <BackToTop />
     </div>
   );

@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import {
   Bot,
   FileCode2,
@@ -28,14 +27,11 @@ import {
   Download,
   X,
   FileText,
-  Cpu,
-  Wrench,
   SearchX,
   Star,
   Shuffle,
   CopyPlus,
   Keyboard,
-  Link2,
   History,
   FileArchive,
   GitCompareArrows,
@@ -48,12 +44,14 @@ import {
   FolderPlus,
   PenLine,
   Trash2,
+  ChevronRight,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
 import { Highlight } from './highlight';
 import { SectionHeading } from './section-heading';
 import { Hint } from './hint';
+import { MetaBadges, ItemActions } from './item-actions';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Select,
@@ -72,13 +70,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { parseFrontmatter, formatBytes } from '@/lib/frontmatter';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
+import { parseFrontmatter } from '@/lib/frontmatter';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useRecent } from '@/hooks/use-recent';
 import { useDensity, type ListDensity } from '@/hooks/use-density';
 import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
+import { toolkitDataUrl } from '@/lib/env';
 import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
 import { rankSearchResults, searchScore } from '@/lib/search-rank';
 import { useI18n, translate, getLang } from '@/lib/i18n';
@@ -98,59 +98,6 @@ const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
 };
 
 type CategoryFilter = ToolkitCategoryId | 'all';
-
-function useCopy() {
-  const { t } = useI18n();
-  const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const copy = async (text: string, path: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedPath(path);
-      toast.success(t('toast.copied'));
-      setTimeout(() => setCopiedPath((p) => (p === path ? null : p)), 1500);
-    } catch {
-      toast.error(t('toast.copyFailed'));
-    }
-  };
-  return { copiedPath, copy };
-}
-
-function downloadItem(item: ToolkitItem) {
-  const ext = item.path.endsWith('.json') ? 'json' : item.path.endsWith('.js') ? 'js' : 'md';
-  const fileName = item.name.replace(/[^\w.-]+/g, '-') + '.' + ext;
-  const blob = new Blob([item.content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast.success(translate(getLang(), 'toast.downloaded', { name: fileName }));
-}
-
-function MetaBadges({ item }: { item: ToolkitItem }) {
-  const { t } = useI18n();
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
-        <FileText className="h-3 w-3" />
-        {item.lines} {t('catalog.lines')} · {formatBytes(item.size)}
-      </Badge>
-      {item.meta.model && (
-        <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
-          <Cpu className="h-3 w-3" />
-          {item.meta.model}
-        </Badge>
-      )}
-      {item.meta.tools && (
-        <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
-          <Wrench className="h-3 w-3" />
-          {item.meta.tools}
-        </Badge>
-      )}
-    </div>
-  );
-}
 
 interface CatalogItemRowProps {
   item: ToolkitItem;
@@ -264,105 +211,18 @@ const CatalogItemRow = memo(function CatalogItemRow({
       >
         <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
       </button>
+      {/* «Opens detail» affordance — vertically centered chevron on hover */}
+      <ChevronRight
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/50 transition-all duration-200',
+          'opacity-0 group-hover:translate-x-0.5 group-hover:opacity-100',
+          compact && 'right-1.5'
+        )}
+      />
     </div>
   );
 });
-
-function ItemActions({
-  item,
-  copiedPath,
-  copy,
-  isFavorite,
-  onToggleFavorite,
-}: {
-  item: ToolkitItem;
-  copiedPath: string | null;
-  copy: (text: string, path: string) => void;
-  isFavorite: boolean;
-  onToggleFavorite: (path: string) => void;
-}) {
-  const { t } = useI18n();
-  const copied = copiedPath === item.path;
-  const share = async () => {
-    const url = `${window.location.origin}${window.location.pathname}${itemHash(item.path)}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t('toast.linkCopied'));
-    } catch {
-      toast.error(t('toast.linkCopyFailed'));
-    }
-  };
-  const shareOg = async () => {
-    const url = `${window.location.origin}/api/og?item=${encodeURIComponent(item.path)}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t('toast.ogCopied'));
-    } catch {
-      toast.error(t('toast.linkCopyFailed'));
-    }
-  };
-  return (
-    <div className="flex items-center gap-2">
-      <Hint label={t('item.copyLink')}>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 w-8 p-0 transition-colors"
-          aria-label={t('item.copyLink')}
-          onClick={share}
-        >
-          <Link2 className="h-3.5 w-3.5 transition-colors" />
-        </Button>
-      </Hint>
-      <Hint label={t('item.copyOg')}>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 w-8 p-0 transition-colors"
-          aria-label={t('item.copyOg')}
-          onClick={shareOg}
-        >
-          <ImageIcon className="h-3.5 w-3.5 transition-colors" />
-        </Button>
-      </Hint>
-      <Hint label={isFavorite ? t('item.favRemove') : t('item.favAdd')}>
-        <Button
-          size="sm"
-          variant={isFavorite ? 'default' : 'outline'}
-          className={cn('h-8 w-8 p-0 transition-colors', isFavorite && 'text-primary-foreground')}
-          aria-label={isFavorite ? t('item.favRemove') : t('item.favAdd')}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite(item.path);
-          }}
-        >
-          <Star className={cn('h-3.5 w-3.5 transition-colors', isFavorite && 'fill-current text-yellow-400')} />
-        </Button>
-      </Hint>
-      <Hint label={copied ? t('item.done') : t('item.copyConfig')}>
-        <Button
-          size="sm"
-          variant={copied ? 'secondary' : 'default'}
-          className="h-8 gap-1.5 transition-colors"
-          onClick={() => copy(item.content, item.path)}
-        >
-          {copied ? (
-            <Check className="h-3.5 w-3.5 text-primary transition-colors" />
-          ) : (
-            <Copy className="h-3.5 w-3.5 transition-colors" />
-          )}
-          {copied ? t('item.copied') : t('item.copy')}
-        </Button>
-      </Hint>
-      <Hint label={t('item.downloadName', { name: item.name })}>
-        <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={() => downloadItem(item)}>
-          <Download className="h-3.5 w-3.5" />
-          {t('item.download')}
-        </Button>
-      </Hint>
-    </div>
-  );
-}
 
 export function ToolkitCatalogSection() {
   const { lang, t } = useI18n();
@@ -372,12 +232,10 @@ export function ToolkitCatalogSection() {
   const [query, setQuery] = useState('');
   const [favOnly, setFavOnly] = useState(false);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [mobilePreview, setMobilePreview] = useState(false);
   const [colDialog, setColDialog] = useState<'create' | 'rename' | null>(null);
   const [colName, setColName] = useState('');
   const [colDeleteOpen, setColDeleteOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const { copiedPath, copy } = useCopy();
+  const isDesktop = useIsDesktop();
   const {
     favorites,
     isFavorite,
@@ -402,6 +260,7 @@ export function ToolkitCatalogSection() {
     requestFavorites,
     setPaletteOpen,
     openCompare,
+    openDetail,
   } = useUiStore();
 
   const filteredRef = useRef<ToolkitItem[]>([]);
@@ -409,7 +268,7 @@ export function ToolkitCatalogSection() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/toolkit')
+    fetch(toolkitDataUrl())
       .then((r) => r.json())
       .then((json) => {
         if (cancelled) return;
@@ -473,7 +332,7 @@ export function ToolkitCatalogSection() {
 
   const openItem = (item: ToolkitItem) => {
     setSelectedPath(item.path);
-    if (isMobile) setMobilePreview(true);
+    if (!isDesktop) openDetail(item.path);
   };
 
   /*
@@ -481,17 +340,20 @@ export function ToolkitCatalogSection() {
    * reads live data through refs so the identity never changes.
    */
   const allItemsRef = useRef<ToolkitItem[]>([]);
-  const isMobileRef = useRef(isMobile);
+  const isDesktopRef = useRef(isDesktop);
   useEffect(() => {
     allItemsRef.current = allItems;
-    isMobileRef.current = isMobile;
-  }, [allItems, isMobile]);
-  const openByPath = useCallback((path: string) => {
-    const target = allItemsRef.current.find((i) => i.path === path);
-    if (!target) return;
-    setSelectedPath(path);
-    if (isMobileRef.current) setMobilePreview(true);
-  }, []);
+    isDesktopRef.current = isDesktop;
+  }, [allItems, isDesktop]);
+  const openByPath = useCallback(
+    (path: string) => {
+      const target = allItemsRef.current.find((i) => i.path === path);
+      if (!target) return;
+      setSelectedPath(path);
+      if (!isDesktopRef.current) openDetail(path);
+    },
+    [openDetail],
+  );
 
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -536,7 +398,7 @@ export function ToolkitCatalogSection() {
     }
     const item = pool[Math.floor(Math.random() * pool.length)];
     setSelectedPath(item.path);
-    if (isMobile) setMobilePreview(true);
+    if (!isDesktop) openDetail(item.path);
     toast.success(translate(getLang(), 'toast.randomPick', { name: item.name }));
     scrollToCatalog();
   };
@@ -550,11 +412,12 @@ export function ToolkitCatalogSection() {
     if (!linked) return;
     if (allItems.some((i) => i.path === linked)) {
       setSelectedPath(linked);
+      if (!isDesktopRef.current) openDetail(linked);
       scrollToCatalog();
     } else {
       replaceItemHash(null); // stale link — clean the hash
     }
-  }, [catalog, allItems]);
+  }, [catalog, allItems, isDesktopRef, openDetail]);
 
   const selectedPathRef = useRef<string | null>(null);
   useEffect(() => {
@@ -615,7 +478,7 @@ export function ToolkitCatalogSection() {
     const next = pool[Math.min(pool.length - 1, Math.max(0, idx + dir))];
     if (!next || next.path === selectedPath) return;
     setSelectedPath(next.path);
-    if (isMobile) setMobilePreview(true);
+    if (!isDesktop) openDetail(next.path);
     requestAnimationFrame(() => {
       document
         .querySelector(`[data-item-path="${CSS.escape(next.path)}"]`)
@@ -680,11 +543,15 @@ export function ToolkitCatalogSection() {
       setCategory('all');
       setQuery('');
       setSelectedPath(item.path);
-      if (isMobile) setMobilePreview(true);
-      scrollToCatalog();
+      if (!isDesktop) {
+        /* Below lg there is no inline preview — open the detail sheet instead */
+        openDetail(item.path);
+      } else {
+        scrollToCatalog();
+      }
     }
     setRequestPath(null);
-  }, [requestPath, allItems, isMobile, setRequestPath]);
+  }, [requestPath, allItems, isDesktop, setRequestPath, openDetail]);
 
   useEffect(() => {
     if (requestRandom > 0) pickRandom();
@@ -1116,8 +983,6 @@ export function ToolkitCatalogSection() {
                       </div>
                       <ItemActions
                         item={selected}
-                        copiedPath={copiedPath}
-                        copy={copy}
                         isFavorite={isFavorite(selected.path)}
                         onToggleFavorite={toggleFavorite}
                       />
@@ -1134,13 +999,8 @@ export function ToolkitCatalogSection() {
                     />
                   </div>
                   <div id="preview-scroll" className="max-h-[560px] overflow-y-auto p-5 scrollbar-thin">
-                    {/* Skip when the mobile dialog owns the screen — avoids duplicate heading ids */}
-                    {!(isMobile && mobilePreview) && (
-                      <>
-                        <PreviewToc body={selectedBody} containerId="preview-scroll" />
-                        <MarkdownViewer content={selectedBody} />
-                      </>
-                    )}
+                    <PreviewToc body={selectedBody} containerId="preview-scroll" />
+                    <MarkdownViewer content={selectedBody} />
                   </div>
                 </>
               ) : (
@@ -1162,48 +1022,6 @@ export function ToolkitCatalogSection() {
           </div>
         )}
       </div>
-
-      {/* Mobile preview dialog */}
-      <Dialog open={mobilePreview && !!selected} onOpenChange={setMobilePreview}>
-        <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
-          {selected && (
-            <>
-              <DialogHeader className="border-b border-border bg-muted/30 p-5 text-left">
-                <DialogTitle className="truncate pr-6 font-mono text-base">
-                  {selected.name}
-                </DialogTitle>
-                <DialogDescription className="mt-0.5 truncate font-mono text-xs">
-                  toolkit/{selected.path}
-                </DialogDescription>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <MetaBadges item={selected} />
-                  <ItemActions
-                    item={selected}
-                    copiedPath={copiedPath}
-                    copy={copy}
-                    isFavorite={isFavorite(selected.path)}
-                    onToggleFavorite={toggleFavorite}
-                  />
-                </div>
-                <SimilarConfigs
-                  current={selected}
-                  all={allItems}
-                  onSelect={openByPath}
-                  onCompare={(pathB) => openCompare(selected.path, pathB)}
-                  className="mt-3"
-                />
-              </DialogHeader>
-              <div
-                id="mobile-preview-scroll"
-                className="flex-1 overflow-y-auto p-5 scrollbar-thin"
-              >
-                <PreviewToc body={selectedBody} containerId="mobile-preview-scroll" />
-                <MarkdownViewer content={selectedBody} />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Collection create / rename dialog */}
       <Dialog

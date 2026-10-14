@@ -30,7 +30,12 @@ export function PreviewToc({ body, containerId }: { body: string; containerId: s
       const containerTop = container.getBoundingClientRect().top;
       let current: string | null = null;
       for (const e of entries) {
-        const head = container.querySelector(`#${e.id}`);
+        /* Attribute selector instead of `#id`: heading ids may start with a
+           digit (e.g. «1. External memory» → #1-external-memory), which is
+           valid HTML but an INVALID CSS selector — `#1-…` throws a
+           SyntaxError and crashed the whole page (the «config of the day»
+           → open → crash report). */
+        const head = container.querySelector(`[id="${e.id}"]`);
         if (!head) continue;
         const rel = head.getBoundingClientRect().top - containerTop;
         if (rel <= 32) current = e.id;
@@ -53,7 +58,7 @@ export function PreviewToc({ body, containerId }: { body: string; containerId: s
 
   const scrollTo = (id: string) => {
     const container = document.getElementById(containerId);
-    const head = container?.querySelector(`#${id}`);
+    const head = container?.querySelector(`[id="${id}"]`);
     if (!container || !head) return;
     const delta = head.getBoundingClientRect().top - container.getBoundingClientRect().top;
     container.scrollTo({ top: container.scrollTop + delta - 8, behavior: 'smooth' });

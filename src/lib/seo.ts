@@ -1,7 +1,8 @@
 /** Canonical site URL — used by sitemap/robots/OG metadata. Override with NEXT_PUBLIC_SITE_URL. */
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://everything-zcode.vercel.app';
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theuniqueballs.github.io/everything-ZCode';
 
-export const SITE_TITLE = 'Everything ZCode — конфиги для ZCode / Z.ai';
+export const SITE_TITLE = 'Everything ZCode — production configs for ZCode / Z.ai';
 
 export const SITE_DESCRIPTION =
-  'Полная коллекция production-ready конфигов для ZCode / Z.ai: агенты, команды, скиллы, правила, хуки и контексты для продуктивной AI-разработки с моделями GLM.';
+  'A complete collection of production-ready configs for ZCode / Z.ai: agents, commands, skills, rules, hooks and contexts for productive AI development with GLM models. Browse, copy, download.';

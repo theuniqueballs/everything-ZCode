@@ -93,7 +93,7 @@ export function ToolkitHeader() {
             </kbd>
           </button>
           <Badge variant="outline" className="hidden font-mono text-[11px] text-primary sm:inline-flex">
-            v1.11
+            v1.12
           </Badge>
           <LangToggle />
           <Tooltip>

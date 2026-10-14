@@ -1,0 +1,62 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 21:00 UTC = 00:00 Europe/Moscow — rebuild daily so «config of the day»
+    # stays correct on the static site (date is baked at build time).
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate static toolkit catalog JSON
+        run: bun scripts/gen-catalog-json.ts
+
+      - name: Build static export
+        env:
+          NEXT_PUBLIC_STATIC_EXPORT: '1'
+          NEXT_PUBLIC_BASE_PATH: /everything-ZCode
+        run: |
+          # Dynamic API routes cannot exist in a static export
+          mv src/app/api /tmp/api-backup
+          bunx next build
+          mv /tmp/api-backup src/app/api
+
+      - name: Disable Jekyll (serve _next/ assets as-is)
+        run: touch out/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

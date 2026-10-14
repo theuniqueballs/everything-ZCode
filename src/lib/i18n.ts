@@ -69,6 +69,11 @@ const DICT: Record<string, Entry> = {
   'day.rel.tomorrow': { ru: 'Завтра', en: 'Tomorrow' },
   'day.rel.ago': { ru: '{n} дн. назад', en: '{n} day(s) ago' },
   'day.rel.in': { ru: 'через {n} дн.', en: 'in {n} day(s)' },
+  'day.inCatalog': { ru: 'Показать в каталоге', en: 'Locate in catalog' },
+
+  /* ---- Item detail sheet ---- */
+  'detail.aria': { ru: 'Просмотр конфига', en: 'Config details' },
+  'detail.viewOnGithub': { ru: 'Открыть файл на GitHub', en: 'View file on GitHub' },
 
   /* ---- Categories ---- */
   'cat.all': { ru: 'Все', en: 'All' },

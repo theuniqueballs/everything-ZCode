@@ -13,6 +13,10 @@ interface UiState {
   /** Request the catalog to open/scroll to this config path (consumed once). */
   requestPath: string | null;
   setRequestPath: (path: string | null) => void;
+  /** Globally-open item detail sheet (slide-out) — any component can open a config. */
+  detailPath: string | null;
+  openDetail: (path: string) => void;
+  closeDetail: () => void;
   /** Increment to trigger "random config" in the catalog (consumed once). */
   requestRandom: number;
   triggerRandom: () => void;
@@ -43,6 +47,9 @@ export const useUiStore = create<UiState>((set) => ({
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
   requestPath: null,
   setRequestPath: (requestPath) => set({ requestPath }),
+  detailPath: null,
+  openDetail: (detailPath) => set({ detailPath }),
+  closeDetail: () => set({ detailPath: null }),
   requestRandom: 0,
   triggerRandom: () => set((s) => ({ requestRandom: s.requestRandom + 1 })),
   requestFavorites: 0,
