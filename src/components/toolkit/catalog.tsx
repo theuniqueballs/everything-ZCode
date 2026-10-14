@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,8 @@ import {
   Braces,
   FileUp,
   MousePointerClick,
+  Rows2,
+  Rows3,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
@@ -52,6 +54,7 @@ import { parseFrontmatter, formatBytes } from '@/lib/frontmatter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useRecent } from '@/hooks/use-recent';
+import { useDensity, type ListDensity } from '@/hooks/use-density';
 import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
 import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
@@ -137,6 +140,122 @@ function Hint({ label, children }: { label: string; children: React.ReactNode })
     </Tooltip>
   );
 }
+
+interface CatalogItemRowProps {
+  item: ToolkitItem;
+  active: boolean;
+  fav: boolean;
+  query: string;
+  density: ListDensity;
+  onOpen: (path: string) => void;
+  onToggleFav: (path: string) => void;
+}
+
+/*
+ * Memoized catalog row — re-renders only when its own data, density or
+ * query highlight changes. Selection/favorites toggles re-render just the
+ * affected rows instead of the whole list (45 items × rich content).
+ */
+const CatalogItemRow = memo(function CatalogItemRow({
+  item,
+  active,
+  fav,
+  query,
+  density,
+  onOpen,
+  onToggleFav,
+}: CatalogItemRowProps) {
+  const { t } = useI18n();
+  const Icon = CATEGORY_ICONS[item.category];
+  const compact = density === 'compact';
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-item-path={item.path}
+      onClick={() => onOpen(item.path)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen(item.path);
+        }
+      }}
+      aria-current={active}
+      title={compact ? item.description : undefined}
+      className={cn(
+        'group relative w-full cursor-pointer rounded-xl border border-l-2 text-left transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        compact ? 'p-2' : 'p-3.5',
+        active
+          ? 'border-primary/60 border-l-primary bg-gradient-to-r from-primary/[0.12] to-primary/[0.03] shadow-sm'
+          : 'border-border/70 border-l-transparent bg-card/60 hover:border-primary/40 hover:bg-card'
+      )}
+    >
+      <div className={cn('flex items-start gap-3', compact && 'items-center gap-2.5')}>
+        <span
+          className={cn(
+            'flex shrink-0 items-center justify-center rounded-lg transition-colors',
+            compact ? 'h-7 w-7' : 'mt-0.5 h-8 w-8',
+            active ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+          )}
+        >
+          <Icon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <Highlight
+              text={item.name}
+              query={query}
+              className={cn(
+                'min-w-0 truncate font-mono font-semibold',
+                compact ? 'text-xs' : 'text-sm'
+              )}
+            />
+            {compact && (
+              <span className="ml-auto shrink-0 text-[10px] text-muted-foreground/60">
+                {item.lines}
+              </span>
+            )}
+          </div>
+          {!compact && (
+            <>
+              <Highlight
+                text={item.description}
+                query={query}
+                className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground"
+              />
+              <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground/70">
+                <span className="min-w-0 truncate font-mono">{item.path}</span>
+                <span>·</span>
+                <span className="shrink-0">{item.lines} {t('catalog.linesShort')}</span>
+              </div>
+            </>
+          )}
+          {compact && (
+            <p className="truncate font-mono text-[10px] text-muted-foreground/60">{item.path}</p>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        aria-label={fav ? t('item.favRemove') : t('item.favAdd')}
+        title={fav ? t('item.favRemove') : t('item.favAdd')}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFav(item.path);
+        }}
+        className={cn(
+          'absolute rounded-md p-1.5 transition-all',
+          compact ? 'right-2 top-1.5' : 'right-3 top-3',
+          fav
+            ? 'text-yellow-400 opacity-100'
+            : 'text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100'
+        )}
+      >
+        <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
+      </button>
+    </div>
+  );
+});
 
 function ItemActions({
   item,
@@ -227,8 +346,10 @@ export function ToolkitCatalogSection() {
   const { copiedPath, copy } = useCopy();
   const { favorites, isFavorite, toggle: toggleFavorite, importMany } = useFavorites();
   const { recent, push: pushRecent, clear: clearRecent } = useRecent();
+  const { density, toggle: toggleDensity } = useDensity();
   const {
     setCatalog: setStoreCatalog,
+    setLastSelectedPath,
     requestPath,
     setRequestPath,
     requestRandom,
@@ -238,6 +359,7 @@ export function ToolkitCatalogSection() {
   } = useUiStore();
 
   const filteredRef = useRef<ToolkitItem[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,11 +430,22 @@ export function ToolkitCatalogSection() {
     if (isMobile) setMobilePreview(true);
   };
 
-  /** Open an item by path — used by «Похожие конфиги» chips. */
-  const openByPath = (path: string) => {
-    const target = allItems.find((i) => i.path === path);
-    if (target) openItem(target);
-  };
+  /*
+   * Stable open-by-path callback for memoized rows (and chips):
+   * reads live data through refs so the identity never changes.
+   */
+  const allItemsRef = useRef<ToolkitItem[]>([]);
+  const isMobileRef = useRef(isMobile);
+  useEffect(() => {
+    allItemsRef.current = allItems;
+    isMobileRef.current = isMobile;
+  }, [allItems, isMobile]);
+  const openByPath = useCallback((path: string) => {
+    const target = allItemsRef.current.find((i) => i.path === path);
+    if (!target) return;
+    setSelectedPath(path);
+    if (isMobileRef.current) setMobilePreview(true);
+  }, []);
 
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -382,13 +515,39 @@ export function ToolkitCatalogSection() {
     if (!catalog) return;
     const prev = selectedPathRef.current;
     selectedPathRef.current = selectedPath;
-    if (selectedPath && selectedPath !== readItemHash()) {
-      replaceItemHash(selectedPath);
+    if (selectedPath) {
+      setLastSelectedPath(selectedPath);
+      if (selectedPath !== readItemHash()) {
+        replaceItemHash(selectedPath);
+      }
     }
     if (selectedPath && prev !== selectedPath) {
       pushRecent(selectedPath);
     }
-  }, [selectedPath, catalog, pushRecent]);
+  }, [selectedPath, catalog, pushRecent, setLastSelectedPath]);
+
+  /* ---- Global hotkey: "/" focuses the catalog search (vim-style) ---- */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      document
+        .getElementById('catalog')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      searchRef.current?.focus();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     const onHash = () => {
@@ -482,6 +641,7 @@ export function ToolkitCatalogSection() {
             <div className="relative min-w-0 flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
+                ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('catalog.searchPh')}
@@ -721,15 +881,45 @@ export function ToolkitCatalogSection() {
           <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
             {/* List */}
             <div className="flex min-w-0 flex-col">
-              <p className="mb-2 text-xs text-muted-foreground">
-                {t('catalog.found')} <span className="font-semibold text-foreground">{filtered.length}</span>
-                <span className="ml-2 hidden font-mono text-[10px] text-muted-foreground/60 lg:inline">
-                  {t('catalog.navHint')}
-                </span>
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="min-w-0 text-xs text-muted-foreground">
+                  {t('catalog.found')} <span className="font-semibold text-foreground">{filtered.length}</span>
+                  <span className="ml-2 hidden font-mono text-[10px] text-muted-foreground/60 lg:inline">
+                    {t('catalog.navHint')}
+                  </span>
+                </p>
+                <Hint
+                  label={
+                    density === 'compact'
+                      ? t('catalog.densityCompact')
+                      : t('catalog.densityComfortable')
+                  }
+                >
+                  <button
+                    type="button"
+                    aria-label={
+                      density === 'compact'
+                        ? t('catalog.densityCompact')
+                        : t('catalog.densityComfortable')
+                    }
+                    aria-pressed={density === 'compact'}
+                    onClick={toggleDensity}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  >
+                    {density === 'compact' ? (
+                      <Rows3 className="h-3.5 w-3.5" />
+                    ) : (
+                      <Rows2 className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </Hint>
+              </div>
               <div
                 onKeyDown={onListKeyDown}
-                className="max-h-[600px] space-y-2 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin lg:max-h-[640px]"
+                className={cn(
+                  'max-h-[600px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin lg:max-h-[640px]',
+                  density === 'compact' ? 'space-y-1' : 'space-y-2'
+                )}
               >
                 {filtered.length === 0 ? (
                   <Card className="flex flex-col items-center gap-3 border-dashed p-8 text-center">
@@ -752,80 +942,18 @@ export function ToolkitCatalogSection() {
                     </Button>
                   </Card>
                 ) : (
-                  filtered.map((item) => {
-                    const Icon = CATEGORY_ICONS[item.category];
-                    const active = selected?.path === item.path;
-                    const fav = isFavorite(item.path);
-                    return (
-                      <div
-                        key={item.path}
-                        role="button"
-                        tabIndex={0}
-                        data-item-path={item.path}
-                        onClick={() => openItem(item)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            openItem(item);
-                          }
-                        }}
-                        aria-current={active}
-                        className={cn(
-                          'group relative w-full cursor-pointer rounded-xl border border-l-2 p-3.5 text-left transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                          active
-                            ? 'border-primary/60 border-l-primary bg-gradient-to-r from-primary/[0.12] to-primary/[0.03] shadow-sm'
-                            : 'border-border/70 border-l-transparent bg-card/60 hover:border-primary/40 hover:bg-card'
-                        )}
-                      >
-                        <div className="flex items-start gap-3 pr-7">
-                          <span
-                            className={cn(
-                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                              active ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
-                            )}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex min-w-0 items-center gap-2">
-                              <Highlight
-                                text={item.name}
-                                query={query}
-                                className="min-w-0 truncate font-mono text-sm font-semibold"
-                              />
-                            </div>
-                            <Highlight
-                              text={item.description}
-                              query={query}
-                              className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground"
-                            />
-                            <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground/70">
-                              <span className="min-w-0 truncate font-mono">{item.path}</span>
-                              <span>·</span>
-                              <span className="shrink-0">{item.lines} {t('catalog.linesShort')}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          aria-label={fav ? t('item.favRemove') : t('item.favAdd')}
-                          title={fav ? t('item.favRemove') : t('item.favAdd')}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(item.path);
-                          }}
-                          className={cn(
-                            'absolute right-3 top-3 rounded-md p-1.5 transition-all',
-                            fav
-                              ? 'text-yellow-400 opacity-100'
-                              : 'text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100'
-                          )}
-                        >
-                          <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
-                        </button>
-                      </div>
-                    );
-                  })
+                  filtered.map((item) => (
+                    <CatalogItemRow
+                      key={item.path}
+                      item={item}
+                      active={selected?.path === item.path}
+                      fav={isFavorite(item.path)}
+                      query={query}
+                      density={density}
+                      onOpen={openByPath}
+                      onToggleFav={toggleFavorite}
+                    />
+                  ))
                 )}
               </div>
             </div>

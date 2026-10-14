@@ -115,6 +115,12 @@ const DICT: Record<string, Entry> = {
   },
   'catalog.recent': { ru: 'Недавние:', en: 'Recent:' },
   'catalog.clearRecent': { ru: 'Очистить историю просмотров', en: 'Clear view history' },
+  'catalog.densityComfortable': { ru: 'Обычная плотность списка', en: 'Comfortable list density' },
+  'catalog.densityCompact': { ru: 'Компактная плотность списка', en: 'Compact list density' },
+  'catalog.searchFocus': {
+    ru: 'Фокус на поиск — клавиша /',
+    en: 'Focus search — press /',
+  },
   'catalog.found': { ru: 'Найдено:', en: 'Found:' },
   'catalog.navHint': { ru: '↑/↓ или j/k — навигация', en: '↑/↓ or j/k — navigate' },
   'catalog.emptyFav': {
@@ -347,6 +353,11 @@ const DICT: Record<string, Entry> = {
   'palette.downloadZip': { ru: 'Скачать весь тулкит (ZIP)', en: 'Download the full toolkit (ZIP)' },
   'palette.shortcuts': { ru: 'Горячие клавиши', en: 'Keyboard shortcuts' },
   'palette.sections': { ru: 'Разделы', en: 'Sections' },
+  'palette.recent': { ru: 'Недавние конфиги', en: 'Recent configs' },
+  'palette.compareSimilar': {
+    ru: 'Diff выбранного с самым похожим',
+    en: 'Diff selection with its closest match',
+  },
   'palette.sec.catalog': { ru: 'Каталог конфигов', en: 'Config catalog' },
   'palette.sec.stats': { ru: 'Аналитика тулкита', en: 'Toolkit analytics' },
   'palette.sec.concepts': { ru: 'Ключевые концепты', en: 'Key concepts' },
@@ -409,6 +420,13 @@ const DICT: Record<string, Entry> = {
     en: 'Click the star — add to favorites (persisted)',
   },
   'sc.esc': { ru: 'Закрыть палитру, диалог или превью', en: 'Close the palette, dialog or preview' },
+  'sc.focusSearch': {
+    ru: 'Фокус на поиск в каталоге',
+    en: 'Focus the catalog search',
+  },
+  'sc.group.general': { ru: 'Общие', en: 'General' },
+  'sc.group.catalog': { ru: 'Каталог', en: 'Catalog' },
+  'sc.group.palette': { ru: 'Палитра команд', en: 'Command palette' },
 
   /* ---- Similar configs ---- */
   'similar.label': { ru: 'Похожие:', en: 'Similar:' },

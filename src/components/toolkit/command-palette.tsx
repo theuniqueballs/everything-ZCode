@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Bot,
@@ -19,6 +19,7 @@ import {
   FileArchive,
   GitCompareArrows,
   Keyboard,
+  History,
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -32,8 +33,10 @@ import {
 import { useUiStore } from '@/lib/store';
 import { downloadItemsZip } from '@/lib/zip';
 import { useI18n } from '@/lib/i18n';
+import { findSimilar } from '@/lib/similar';
+import { useRecent } from '@/hooks/use-recent';
 import { Highlight } from './highlight';
-import type { ToolkitCategoryId } from '@/lib/toolkit-types';
+import type { ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
 
 const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
   agents: Bot,
@@ -59,9 +62,31 @@ export function CommandPalette() {
     catalog,
     openCompare,
     setShortcutsOpen,
+    lastSelectedPath,
   } = useUiStore();
   const { resolvedTheme, setTheme } = useTheme();
+  const { recent } = useRecent();
   const [query, setQuery] = useState('');
+
+  /* Context: last selected config and its closest similar match. */
+  const context = useMemo(() => {
+    if (!catalog || !lastSelectedPath) return null;
+    const all = catalog.categories.flatMap((c) => c.items);
+    const current = all.find((i) => i.path === lastSelectedPath);
+    if (!current) return null;
+    const top = findSimilar(current, all, 1)[0]?.item ?? null;
+    return { current, top };
+  }, [catalog, lastSelectedPath]);
+
+  /* Recent configs resolved against the shared catalog (top 4). */
+  const recentItems = useMemo<ToolkitItem[]>(() => {
+    if (!catalog) return [];
+    const all = catalog.categories.flatMap((c) => c.items);
+    return recent
+      .map((p) => all.find((i) => i.path === p))
+      .filter((i): i is ToolkitItem => Boolean(i))
+      .slice(0, 4);
+  }, [recent, catalog]);
 
   /* Reset the highlight query when the palette closes. */
   useEffect(() => {
@@ -175,6 +200,21 @@ export function CommandPalette() {
             <GitCompareArrows className="mr-2 h-4 w-4" />
             {t('palette.compare')}
           </CommandItem>
+          {context?.top && (
+            <CommandItem
+              value={`diff similar ${context.current.name} ${context.top.name} ${context.current.path}`}
+              onSelect={() => {
+                setPaletteOpen(false);
+                openCompare(context.current.path, context.top.path);
+              }}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {t('palette.compareSimilar')}
+              <span className="ml-auto hidden max-w-44 truncate font-mono text-[10px] text-muted-foreground sm:inline">
+                {context.current.name} ↔ {context.top.name}
+              </span>
+            </CommandItem>
+          )}
           <CommandItem
             onSelect={() => {
               setPaletteOpen(false);
@@ -192,6 +232,29 @@ export function CommandPalette() {
             {t('palette.shortcuts')}
           </CommandItem>
         </CommandGroup>
+
+        {/* Recent configs */}
+        {recentItems.length > 0 && (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading={t('palette.recent')}>
+              {recentItems.map((item) => (
+                <CommandItem
+                  key={item.path}
+                  value={`recent ${item.name} ${item.description} ${item.path}`}
+                  onSelect={() => openConfig(item.path)}
+                  className="gap-2"
+                >
+                  <History className="mr-1 h-4 w-4 shrink-0 text-primary" />
+                  <span className="min-w-0 font-mono text-xs font-semibold">{item.name}</span>
+                  <span className="ml-auto hidden truncate text-[11px] text-muted-foreground sm:inline">
+                    {item.path}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        )}
 
         {/* Sections */}
         <CommandGroup heading={t('palette.sections')}>

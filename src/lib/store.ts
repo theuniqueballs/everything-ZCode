@@ -22,6 +22,9 @@ interface UiState {
   /** Shared catalog cache so the palette doesn't re-fetch. */
   catalog: ToolkitCatalog | null;
   setCatalog: (catalog: ToolkitCatalog | null) => void;
+  /** Last config selected in the catalog — lets the palette offer context actions. */
+  lastSelectedPath: string | null;
+  setLastSelectedPath: (path: string | null) => void;
   /** Compare dialog (diff between two configs). */
   compareOpen: boolean;
   compareInitPath: string | null;
@@ -46,6 +49,8 @@ export const useUiStore = create<UiState>((set) => ({
   triggerFavorites: () => set((s) => ({ requestFavorites: s.requestFavorites + 1 })),
   catalog: null,
   setCatalog: (catalog) => set({ catalog }),
+  lastSelectedPath: null,
+  setLastSelectedPath: (lastSelectedPath) => set({ lastSelectedPath }),
   compareOpen: false,
   compareInitPath: null,
   compareInitPathB: null,
