@@ -37,6 +37,36 @@ export async function downloadItemsZip(items: ToolkitItem[], zipName: string) {
 }
 
 /**
+ * Parse a favorites JSON (our export format, or a plain array of paths /
+ * of {path} objects). Returns a deduped list of paths, or null on
+ * structurally invalid input.
+ */
+export function parseFavoritesImport(text: string): string[] | null {
+  try {
+    const data: unknown = JSON.parse(text);
+    const list = Array.isArray(data)
+      ? data
+      : data && typeof data === 'object' && Array.isArray((data as { favorites?: unknown }).favorites)
+        ? (data as { favorites: unknown[] }).favorites
+        : null;
+    if (!list) return null;
+    const paths = list
+      .map((entry) => {
+        if (typeof entry === 'string') return entry;
+        if (entry && typeof entry === 'object') {
+          const path = (entry as { path?: unknown }).path;
+          if (typeof path === 'string') return path;
+        }
+        return null;
+      })
+      .filter((p): p is string => typeof p === 'string' && p.length > 0);
+    return Array.from(new Set(paths));
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Export the favorites list as JSON: paths + resolved metadata.
  * Handy for sharing a curated config set or re-import later.
  */

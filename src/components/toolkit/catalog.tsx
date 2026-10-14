@@ -40,6 +40,8 @@ import {
   FileArchive,
   GitCompareArrows,
   Braces,
+  FileUp,
+  MousePointerClick,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
@@ -52,7 +54,7 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useRecent } from '@/hooks/use-recent';
 import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
-import { downloadItemsZip, downloadFavoritesJson } from '@/lib/zip';
+import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
 import { SimilarConfigs } from './similar-configs';
 import { Reveal } from './motion-primitives';
 import type { ToolkitCatalog, ToolkitCategory, ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
@@ -217,7 +219,7 @@ export function ToolkitCatalogSection() {
   const [mobilePreview, setMobilePreview] = useState(false);
   const isMobile = useIsMobile();
   const { copiedPath, copy } = useCopy();
-  const { favorites, isFavorite, toggle: toggleFavorite } = useFavorites();
+  const { favorites, isFavorite, toggle: toggleFavorite, importMany } = useFavorites();
   const { recent, push: pushRecent, clear: clearRecent } = useRecent();
   const {
     setCatalog: setStoreCatalog,
@@ -308,6 +310,37 @@ export function ToolkitCatalogSection() {
   const openByPath = (path: string) => {
     const target = allItems.find((i) => i.path === path);
     if (target) openItem(target);
+  };
+
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  /** Handle a favorites-JSON import file (see parseFavoritesImport). */
+  const onImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const imported = parseFavoritesImport(text);
+      if (!imported) {
+        toast.error('Некорректный файл — ожидается JSON экспорта избранного');
+        return;
+      }
+      const known = imported.filter((p) => allItems.some((i) => i.path === p));
+      if (known.length === 0) {
+        toast.error('В файле нет ни одного пути из этого каталога');
+        return;
+      }
+      const added = importMany(known);
+      const dupes = known.length - added;
+      const unknown = imported.length - known.length;
+      const parts = [`+${added} новых`];
+      if (dupes > 0) parts.push(`${dupes} уже были`);
+      if (unknown > 0) parts.push(`${unknown} не найдено в каталоге`);
+      toast.success(`Импорт избранного: ${parts.join(' · ')}`);
+    } catch {
+      toast.error('Не удалось прочитать файл');
+    }
   };
 
   const scrollToCatalog = () => {
@@ -588,18 +621,39 @@ export function ToolkitCatalogSection() {
                 <Star className="h-3.5 w-3.5 fill-current text-yellow-400" />
                 Показаны только избранные конфиги ({favorites.length})
               </div>
-              {favorites.length > 0 && (
+              <div className="flex shrink-0 items-center gap-1.5">
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  aria-hidden
+                  tabIndex={-1}
+                  onChange={onImportFile}
+                />
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 gap-1.5 px-2.5 text-xs"
-                  title="Скачать избранное как JSON (пути + метаданные)"
-                  onClick={() => downloadFavoritesJson(favorites, allItems)}
+                  title="Импортировать избранное из JSON (экспорт этого сайта или массив путей)"
+                  onClick={() => importInputRef.current?.click()}
                 >
-                  <Braces className="h-3.5 w-3.5" />
-                  Экспорт избранного
+                  <FileUp className="h-3.5 w-3.5" />
+                  Импорт
                 </Button>
-              )}
+                {favorites.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1.5 px-2.5 text-xs"
+                    title="Скачать избранное как JSON (пути + метаданные)"
+                    onClick={() => downloadFavoritesJson(favorites, allItems)}
+                  >
+                    <Braces className="h-3.5 w-3.5" />
+                    Экспорт избранного
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -815,8 +869,18 @@ export function ToolkitCatalogSection() {
                   </div>
                 </>
               ) : (
-                <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-                  Выберите файл слева
+                <div className="flex h-64 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+                  <MousePointerClick className="h-8 w-8 text-muted-foreground/40" />
+                  <p>{filtered.length > 0 ? 'Выберите файл слева' : 'Здесь появится выбранный конфиг'}</p>
+                  {filtered.length > 0 && (
+                    <p className="flex flex-wrap items-center justify-center gap-1 text-xs">
+                      или листайте
+                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">↑/↓</kbd>
+                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">j/k</kbd>
+                      и открывайте
+                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">Enter</kbd>
+                    </p>
+                  )}
                 </div>
               )}
             </Card>

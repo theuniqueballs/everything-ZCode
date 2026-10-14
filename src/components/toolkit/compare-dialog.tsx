@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/lib/store';
 import { parseFrontmatter } from '@/lib/frontmatter';
 import { diffLines, diffStats, formatUnifiedDiff } from '@/lib/diff';
+import { findSimilar } from '@/lib/similar';
 import type { ToolkitCategory, ToolkitItem } from '@/lib/toolkit-types';
 import { cn } from '@/lib/utils';
 
@@ -89,12 +90,26 @@ export function CompareDialog() {
   const categories = catalog?.categories ?? [];
   const allItems = useMemo(() => categories.flatMap((c) => c.items), [categories]);
 
-  /* Prefill A from the store request each time the dialog opens. */
+  /*
+   * Prefill from the store request each time the dialog opens.
+   * When a base config is given, auto-pick the most similar item as B —
+   * «сравнить с похожим» работает в один клик.
+   */
   useEffect(() => {
     if (!compareOpen) return;
     setCopied(false);
-    setPathA(compareInitPath && allItems.some((i) => i.path === compareInitPath) ? compareInitPath : null);
-    setPathB(null);
+    const base =
+      compareInitPath && allItems.some((i) => i.path === compareInitPath)
+        ? compareInitPath
+        : null;
+    setPathA(base);
+    if (base) {
+      const baseItem = allItems.find((i) => i.path === base);
+      const similar = baseItem ? findSimilar(baseItem, allItems, 1) : [];
+      setPathB(similar.length > 0 ? similar[0].item.path : null);
+    } else {
+      setPathB(null);
+    }
   }, [compareOpen, compareInitPath, allItems]);
 
   const itemA = allItems.find((i) => i.path === pathA) ?? null;

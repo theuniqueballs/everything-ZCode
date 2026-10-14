@@ -67,5 +67,16 @@ export function useFavorites() {
 
   const isFavorite = useCallback((path: string) => favorites.includes(path), [favorites]);
 
-  return { favorites, toggle, isFavorite };
+  /**
+   * Merge a batch of paths into favorites (dedup, order preserved).
+   * Returns how many paths were actually new.
+   */
+  const importMany = useCallback((paths: string[]) => {
+    const current = getSnapshot();
+    const fresh = paths.filter((p) => !current.includes(p));
+    if (fresh.length > 0) writeFavorites([...current, ...fresh]);
+    return fresh.length;
+  }, []);
+
+  return { favorites, toggle, isFavorite, importMany };
 }
