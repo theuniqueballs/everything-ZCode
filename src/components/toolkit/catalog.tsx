@@ -39,6 +39,7 @@ import {
   History,
   FileArchive,
   GitCompareArrows,
+  Braces,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
@@ -51,7 +52,8 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useRecent } from '@/hooks/use-recent';
 import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
-import { downloadItemsZip } from '@/lib/zip';
+import { downloadItemsZip, downloadFavoritesJson } from '@/lib/zip';
+import { SimilarConfigs } from './similar-configs';
 import { Reveal } from './motion-primitives';
 import type { ToolkitCatalog, ToolkitCategory, ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
 import { cn } from '@/lib/utils';
@@ -300,6 +302,12 @@ export function ToolkitCatalogSection() {
   const openItem = (item: ToolkitItem) => {
     setSelectedPath(item.path);
     if (isMobile) setMobilePreview(true);
+  };
+
+  /** Open an item by path — used by «Похожие конфиги» chips. */
+  const openByPath = (path: string) => {
+    const target = allItems.find((i) => i.path === path);
+    if (target) openItem(target);
   };
 
   const scrollToCatalog = () => {
@@ -575,9 +583,23 @@ export function ToolkitCatalogSection() {
             </div>
           )}
           {favOnly && !activeCategory && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Star className="h-3.5 w-3.5 fill-current text-yellow-400" />
-              Показаны только избранные конфиги ({favorites.length})
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Star className="h-3.5 w-3.5 fill-current text-yellow-400" />
+                Показаны только избранные конфиги ({favorites.length})
+              </div>
+              {favorites.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2.5 text-xs"
+                  title="Скачать избранное как JSON (пути + метаданные)"
+                  onClick={() => downloadFavoritesJson(favorites, allItems)}
+                >
+                  <Braces className="h-3.5 w-3.5" />
+                  Экспорт избранного
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -775,6 +797,12 @@ export function ToolkitCatalogSection() {
                     <div className="mt-3">
                       <MetaBadges item={selected} />
                     </div>
+                    <SimilarConfigs
+                      current={selected}
+                      all={allItems}
+                      onSelect={openByPath}
+                      className="mt-3"
+                    />
                   </div>
                   <div id="preview-scroll" className="max-h-[560px] overflow-y-auto p-5 scrollbar-thin">
                     {/* Skip when the mobile dialog owns the screen — avoids duplicate heading ids */}
@@ -818,6 +846,12 @@ export function ToolkitCatalogSection() {
                     onToggleFavorite={toggleFavorite}
                   />
                 </div>
+                <SimilarConfigs
+                  current={selected}
+                  all={allItems}
+                  onSelect={openByPath}
+                  className="mt-3"
+                />
               </DialogHeader>
               <div
                 id="mobile-preview-scroll"

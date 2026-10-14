@@ -4,6 +4,16 @@ import JSZip from 'jszip';
 import { toast } from 'sonner';
 import type { ToolkitItem } from './toolkit-types';
 
+/** Trigger a client-side download of a text blob. */
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /**
  * Build a ZIP archive from toolkit items preserving their relative
  * toolkit/ paths, then trigger a client-side download.
@@ -19,14 +29,49 @@ export async function downloadItemsZip(items: ToolkitItem[], zipName: string) {
       zip.file(item.path, item.content);
     }
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = zipName;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, zipName);
     toast.success(`Скачано: ${zipName} (${items.length} файлов)`);
   } catch {
     toast.error('Не удалось собрать ZIP-архив');
+  }
+}
+
+/**
+ * Export the favorites list as JSON: paths + resolved metadata.
+ * Handy for sharing a curated config set or re-import later.
+ */
+export function downloadFavoritesJson(
+  favoritePaths: string[],
+  allItems: ToolkitItem[],
+) {
+  if (favoritePaths.length === 0) {
+    toast.error('Избранное пусто — сначала добавьте конфиги ★');
+    return;
+  }
+  const byPath = new Map(allItems.map((item) => [item.path, item]));
+  const payload = {
+    app: 'everything-zcode',
+    exportedAt: new Date().toISOString(),
+    count: favoritePaths.length,
+    favorites: favoritePaths.map((path) => {
+      const item = byPath.get(path);
+      return {
+        path,
+        name: item?.name ?? null,
+        category: item?.category ?? null,
+        title: item?.title ?? null,
+        lines: item?.lines ?? null,
+        bytes: item?.size ?? null,
+      };
+    }),
+  };
+  try {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
+    downloadBlob(blob, 'ezc-favorites.json');
+    toast.success(`Экспортировано избранное: ${favoritePaths.length} конфигов`);
+  } catch {
+    toast.error('Не удалось экспортировать избранное');
   }
 }
