@@ -82,7 +82,7 @@ function ConfigSelect({
  * Diff runs on frontmatter-stripped bodies so only real content counts.
  */
 export function CompareDialog() {
-  const { compareOpen, setCompareOpen, compareInitPath, catalog } = useUiStore();
+  const { compareOpen, setCompareOpen, compareInitPath, compareInitPathB, catalog } = useUiStore();
   const [pathA, setPathA] = useState<string | null>(null);
   const [pathB, setPathB] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -92,8 +92,8 @@ export function CompareDialog() {
 
   /*
    * Prefill from the store request each time the dialog opens.
-   * When a base config is given, auto-pick the most similar item as B —
-   * «сравнить с похожим» работает в один клик.
+   * With an explicit B (compare-from-chip) use it as-is; otherwise
+   * auto-pick the most similar item as B — «сравнить с похожим» в один клик.
    */
   useEffect(() => {
     if (!compareOpen) return;
@@ -102,15 +102,21 @@ export function CompareDialog() {
       compareInitPath && allItems.some((i) => i.path === compareInitPath)
         ? compareInitPath
         : null;
+    const explicitB =
+      compareInitPathB && compareInitPathB !== base && allItems.some((i) => i.path === compareInitPathB)
+        ? compareInitPathB
+        : null;
     setPathA(base);
-    if (base) {
+    if (explicitB) {
+      setPathB(explicitB);
+    } else if (base) {
       const baseItem = allItems.find((i) => i.path === base);
       const similar = baseItem ? findSimilar(baseItem, allItems, 1) : [];
       setPathB(similar.length > 0 ? similar[0].item.path : null);
     } else {
       setPathB(null);
     }
-  }, [compareOpen, compareInitPath, allItems]);
+  }, [compareOpen, compareInitPath, compareInitPathB, allItems]);
 
   const itemA = allItems.find((i) => i.path === pathA) ?? null;
   const itemB = allItems.find((i) => i.path === pathB) ?? null;

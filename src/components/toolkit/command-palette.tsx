@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Bot,
@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/command';
 import { useUiStore } from '@/lib/store';
 import { downloadItemsZip } from '@/lib/zip';
+import { Highlight } from './highlight';
 import type { ToolkitCategoryId } from '@/lib/toolkit-types';
 
 const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
@@ -66,6 +67,12 @@ export function CommandPalette() {
     setShortcutsOpen,
   } = useUiStore();
   const { resolvedTheme, setTheme } = useTheme();
+  const [query, setQuery] = useState('');
+
+  /* Reset the highlight query when the palette closes. */
+  useEffect(() => {
+    if (!paletteOpen) setQuery('');
+  }, [paletteOpen]);
 
   /* Global hotkey: Cmd/Ctrl + K */
   useEffect(() => {
@@ -130,7 +137,10 @@ export function CommandPalette() {
       onOpenChange={setPaletteOpen}
       className="max-w-xl"
     >
-      <CommandInput placeholder="Поиск конфигов: tdd, security, hooks…" />
+      <CommandInput
+        placeholder="Поиск конфигов: tdd, security, hooks…"
+        onValueChange={setQuery}
+      />
       <CommandList className="max-h-[70vh] scrollbar-thin">
         <CommandEmpty>
           <span className="text-sm text-muted-foreground">
@@ -208,7 +218,11 @@ export function CommandPalette() {
                     className="gap-2"
                   >
                     <Icon className="mr-1 h-4 w-4 shrink-0 text-primary" />
-                    <span className="font-mono text-xs font-semibold">{item.name}</span>
+                    <Highlight
+                      text={item.name}
+                      query={query}
+                      className="min-w-0 font-mono text-xs font-semibold"
+                    />
                     <span className="ml-auto hidden truncate text-[11px] text-muted-foreground sm:inline">
                       {item.path}
                     </span>

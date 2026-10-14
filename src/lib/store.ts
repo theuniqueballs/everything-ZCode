@@ -25,8 +25,10 @@ interface UiState {
   /** Compare dialog (diff between two configs). */
   compareOpen: boolean;
   compareInitPath: string | null;
-  /** Open compare with an optional pre-filled base config. */
-  openCompare: (path?: string | null) => void;
+  /** Optional explicit B (used by «сравнить с похожим» chips). */
+  compareInitPathB: string | null;
+  /** Open compare with optional pre-filled base (and second) config. */
+  openCompare: (path?: string | null, pathB?: string | null) => void;
   setCompareOpen: (open: boolean) => void;
   /** Keyboard shortcuts cheat-sheet (?) */
   shortcutsOpen: boolean;
@@ -46,7 +48,9 @@ export const useUiStore = create<UiState>((set) => ({
   setCatalog: (catalog) => set({ catalog }),
   compareOpen: false,
   compareInitPath: null,
-  openCompare: (path) => set({ compareInitPath: path ?? null, compareOpen: true }),
+  compareInitPathB: null,
+  openCompare: (path, pathB) =>
+    set({ compareInitPath: path ?? null, compareInitPathB: pathB ?? null, compareOpen: true }),
   setCompareOpen: (compareOpen) => set({ compareOpen }),
   shortcutsOpen: false,
   setShortcutsOpen: (shortcutsOpen) => set({ shortcutsOpen }),

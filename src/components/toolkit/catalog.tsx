@@ -55,6 +55,7 @@ import { useRecent } from '@/hooks/use-recent';
 import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
 import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
+import { rankSearchResults, searchScore } from '@/lib/search-rank';
 import { SimilarConfigs } from './similar-configs';
 import { Reveal } from './motion-primitives';
 import type { ToolkitCatalog, ToolkitCategory, ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
@@ -256,18 +257,14 @@ export function ToolkitCatalogSection() {
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return allItems.filter((item) => {
+    const q = query.trim();
+    const matched = allItems.filter((item) => {
       if (favOnly && !favorites.includes(item.path)) return false;
       if (category !== 'all' && item.category !== category) return false;
       if (!q) return true;
-      return (
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.path.toLowerCase().includes(q) ||
-        item.content.toLowerCase().includes(q)
-      );
+      return searchScore(item, q) > 0;
     });
+    return rankSearchResults(matched, q);
   }, [allItems, category, query, favOnly, favorites]);
 
   useEffect(() => {
@@ -855,6 +852,7 @@ export function ToolkitCatalogSection() {
                       current={selected}
                       all={allItems}
                       onSelect={openByPath}
+                      onCompare={(pathB) => openCompare(selected.path, pathB)}
                       className="mt-3"
                     />
                   </div>
@@ -914,6 +912,7 @@ export function ToolkitCatalogSection() {
                   current={selected}
                   all={allItems}
                   onSelect={openByPath}
+                  onCompare={(pathB) => openCompare(selected.path, pathB)}
                   className="mt-3"
                 />
               </DialogHeader>
