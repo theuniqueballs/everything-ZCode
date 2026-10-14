@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Check, Copy, Download, FolderDown, Package, Terminal, FileArchive } from 'lucide-react';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 import { downloadItemsZip } from '@/lib/zip';
+import { useI18n } from '@/lib/i18n';
 import { StaggerGroup, StaggerItem } from './motion-primitives';
 import { SectionHeading } from './section-heading';
 
@@ -15,9 +16,8 @@ const STEPS = [
   {
     n: 1,
     icon: FolderDown,
-    title: 'Скопируйте конфиги',
-    desc: 'Агенты, команды, скиллы и правила — обычные файлы. Скачайте ZIP или копируйте только нужное.',
-    code: `# Вариант А: ZIP из палитры (⌘K) или кнопки «Весь тулкит»
+    key: 's1',
+    codeRu: `# Вариант А: ZIP из палитры (⌘K) или кнопки «Весь тулкит»
 unzip everything-zcode-toolkit.zip
 
 # Вариант Б: точечно из каталога
@@ -32,13 +32,27 @@ cp commands/*.md ~/.zcode/commands/
 
 # Скиллы (папки!)
 cp -r skills/* ~/.zcode/skills/`,
+    codeEn: `# Option A: ZIP from the palette (⌘K) or the "Full toolkit" button
+unzip everything-zcode-toolkit.zip
+
+# Option B: pick files from the catalog
+# Agents
+cp agents/*.md ~/.zcode/agents/
+
+# Rules
+cp rules/*.md ~/.zcode/rules/
+
+# Commands
+cp commands/*.md ~/.zcode/commands/
+
+# Skills (folders!)
+cp -r skills/* ~/.zcode/skills/`,
   },
   {
     n: 2,
     icon: Terminal,
-    title: 'Подключите хуки',
-    desc: 'Пять кроссплатформенных Node-скриптов: защита от footgun-ов, напоминания, восстановление памяти.',
-    code: `# Укажите корень тулкита
+    key: 's2',
+    codeRu: `# Укажите корень тулкита
 export ZCODE_PLUGIN_ROOT=/path/to/everything-zcode/toolkit
 
 # Слейте hooks/hooks.json в настройки ZCode:
@@ -46,38 +60,53 @@ export ZCODE_PLUGIN_ROOT=/path/to/everything-zcode/toolkit
 #   PreToolUse    → блок "next build", rm -rf /
 #   PostToolUse   → подсказка про lint каждые 10 правок
 #   Stop          → напоминание о checkpoint`,
+    codeEn: `# Point at the toolkit root
+export ZCODE_PLUGIN_ROOT=/path/to/everything-zcode/toolkit
+
+# Merge hooks/hooks.json into your ZCode settings:
+#   SessionStart  → tail worklog.md (memory)
+#   PreToolUse    → block "next build", rm -rf /
+#   PostToolUse   → lint nudge every 10 edits
+#   Stop          → checkpoint reminder`,
   },
   {
     n: 3,
     icon: Package,
-    title: 'Примите workflow',
-    desc: 'Две привычки дают 80% ценности даже без установки файлов.',
-    code: `# Привычка 1 — внешняя память:
+    key: 's3',
+    codeRu: `# Привычка 1 — внешняя память:
 #   каждая сессия начинается с чтения worklog.md
 #   и заканчивается handover-секцией в нём
 
 # Привычка 2 — верификация:
 #   lint → dev.log → браузер (golden path)
 #   фича без прогона по циклу = не сделана`,
+    codeEn: `# Habit 1 — external memory:
+#   every session starts by reading worklog.md
+#   and ends with a handover section in it
+
+# Habit 2 — verification:
+#   lint → dev.log → browser (golden path)
+#   a feature without the loop = not done`,
   },
 ];
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);
+  const { t } = useI18n();
   return (
     <Button
       variant="ghost"
       size="sm"
       className="h-7 gap-1.5 px-2 text-xs transition-colors"
-      aria-label={`Скопировать: ${label}`}
+      aria-label={`${t('item.copy')}: ${label}`}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
           setCopied(true);
-          toast.success('Скопировано в буфер обмена');
+          toast.success(t('toast.copied'));
           setTimeout(() => setCopied(false), 1500);
         } catch {
-          toast.error('Не удалось скопировать');
+          toast.error(t('toast.copyFailed'));
         }
       }}
     >
@@ -86,12 +115,13 @@ function CopyButton({ text, label }: { text: string; label: string }) {
       ) : (
         <Copy className="h-3.5 w-3.5 transition-colors" />
       )}
-      {copied ? 'Готово' : 'Копировать'}
+      {copied ? t('item.done') : t('item.copy')}
     </Button>
   );
 }
 
 export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) {
+  const { lang, t } = useI18n();
   const downloadAll = async () => {
     try {
       const res = await fetch('/api/toolkit');
@@ -104,9 +134,9 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
       a.download = 'everything-zcode-catalog.json';
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('Каталог скачан (JSON)');
+      toast.success(t('toast.catalogDownloaded'));
     } catch {
-      toast.error('Ошибка скачивания');
+      toast.error(t('toast.downloadFailed'));
     }
   };
 
@@ -117,13 +147,13 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
           <SectionHeading
             index="04"
             className="mb-0 max-w-2xl flex-1"
-            title="Установка"
-            description="Три способа начать: скопировать файлы, подключить хуки или просто перенять workflow."
+            title={t('install.title')}
+            description={t('install.desc')}
           />
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" className="gap-2" onClick={downloadAll} disabled={!catalog}>
               <Download className="h-4 w-4" />
-              Каталог (JSON)
+              {t('install.catalogJson')}
             </Button>
             <Button className="gap-2" disabled={!catalog} onClick={() => {
               if (!catalog) return;
@@ -131,7 +161,7 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
               downloadItemsZip(all, 'everything-zcode-toolkit.zip');
             }}>
               <FileArchive className="h-4 w-4" />
-              Весь тулкит (ZIP)
+              {t('install.fullZip')}
             </Button>
           </div>
         </div>
@@ -146,20 +176,20 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
                       <step.icon className="h-5 w-5" />
                     </div>
                     <Badge variant="secondary" className="font-mono text-xs">
-                      шаг {step.n}/3
+                      {t('install.step', { n: step.n })}
                     </Badge>
                   </div>
-                  <CardTitle className="text-base">{step.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{step.desc}</p>
+                  <CardTitle className="text-base">{t(`install.${step.key}.title`)}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t(`install.${step.key}.desc`)}</p>
                 </CardHeader>
                 <CardContent className="mt-auto">
                   <div className="overflow-hidden rounded-lg border border-border">
                     <div className="flex items-center justify-between border-b border-border bg-muted/50 px-3 py-1.5">
                       <span className="font-mono text-[11px] text-muted-foreground">terminal</span>
-                      <CopyButton text={step.code} label={step.title} />
+                      <CopyButton text={lang === 'en' ? step.codeEn : step.codeRu} label={t(`install.${step.key}.title`)} />
                     </div>
                     <pre className="overflow-x-auto bg-zinc-950 p-4 font-mono text-[11px] leading-relaxed text-zinc-100 dark:bg-black/60 scrollbar-thin">
-                      {step.code}
+                      {lang === 'en' ? step.codeEn : step.codeRu}
                     </pre>
                   </div>
                 </CardContent>

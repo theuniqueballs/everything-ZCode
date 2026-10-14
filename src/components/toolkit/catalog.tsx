@@ -56,6 +56,7 @@ import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
 import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
 import { rankSearchResults, searchScore } from '@/lib/search-rank';
+import { useI18n, translate, getLang } from '@/lib/i18n';
 import { SimilarConfigs } from './similar-configs';
 import { Reveal } from './motion-primitives';
 import type { ToolkitCatalog, ToolkitCategory, ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
@@ -74,15 +75,16 @@ const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
 type CategoryFilter = ToolkitCategoryId | 'all';
 
 function useCopy() {
+  const { t } = useI18n();
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const copy = async (text: string, path: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedPath(path);
-      toast.success('Скопировано в буфер обмена');
+      toast.success(t('toast.copied'));
       setTimeout(() => setCopiedPath((p) => (p === path ? null : p)), 1500);
     } catch {
-      toast.error('Не удалось скопировать');
+      toast.error(t('toast.copyFailed'));
     }
   };
   return { copiedPath, copy };
@@ -98,15 +100,16 @@ function downloadItem(item: ToolkitItem) {
   a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
-  toast.success(`Скачано: ${fileName}`);
+  toast.success(translate(getLang(), 'toast.downloaded', { name: fileName }));
 }
 
 function MetaBadges({ item }: { item: ToolkitItem }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
         <FileText className="h-3 w-3" />
-        {item.lines} строк · {formatBytes(item.size)}
+        {item.lines} {t('catalog.lines')} · {formatBytes(item.size)}
       </Badge>
       {item.meta.model && (
         <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
@@ -148,35 +151,36 @@ function ItemActions({
   isFavorite: boolean;
   onToggleFavorite: (path: string) => void;
 }) {
+  const { t } = useI18n();
   const copied = copiedPath === item.path;
   const share = async () => {
     const url = `${window.location.origin}${window.location.pathname}${itemHash(item.path)}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('Ссылка на конфиг скопирована');
+      toast.success(t('toast.linkCopied'));
     } catch {
-      toast.error('Не удалось скопировать ссылку');
+      toast.error(t('toast.linkCopyFailed'));
     }
   };
   return (
     <div className="flex items-center gap-2">
-      <Hint label="Скопировать ссылку на конфиг">
+      <Hint label={t('item.copyLink')}>
         <Button
           size="sm"
           variant="outline"
           className="h-8 w-8 p-0 transition-colors"
-          aria-label="Скопировать ссылку на конфиг"
+          aria-label={t('item.copyLink')}
           onClick={share}
         >
           <Link2 className="h-3.5 w-3.5 transition-colors" />
         </Button>
       </Hint>
-      <Hint label={isFavorite ? 'Убрать из избранного' : 'В избранное'}>
+      <Hint label={isFavorite ? t('item.favRemove') : t('item.favAdd')}>
         <Button
           size="sm"
           variant={isFavorite ? 'default' : 'outline'}
           className={cn('h-8 w-8 p-0 transition-colors', isFavorite && 'text-primary-foreground')}
-          aria-label={isFavorite ? 'Убрать из избранного' : 'В избранное'}
+          aria-label={isFavorite ? t('item.favRemove') : t('item.favAdd')}
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite(item.path);
@@ -185,7 +189,7 @@ function ItemActions({
           <Star className={cn('h-3.5 w-3.5 transition-colors', isFavorite && 'fill-current text-yellow-400')} />
         </Button>
       </Hint>
-      <Hint label={copied ? 'Готово' : 'Скопировать конфиг'}>
+      <Hint label={copied ? t('item.done') : t('item.copyConfig')}>
         <Button
           size="sm"
           variant={copied ? 'secondary' : 'default'}
@@ -197,13 +201,13 @@ function ItemActions({
           ) : (
             <Copy className="h-3.5 w-3.5 transition-colors" />
           )}
-          {copied ? 'Скопировано' : 'Копировать'}
+          {copied ? t('item.copied') : t('item.copy')}
         </Button>
       </Hint>
-      <Hint label={`Скачать ${item.name}`}>
+      <Hint label={t('item.downloadName', { name: item.name })}>
         <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={() => downloadItem(item)}>
           <Download className="h-3.5 w-3.5" />
-          Скачать
+          {t('item.download')}
         </Button>
       </Hint>
     </div>
@@ -211,6 +215,7 @@ function ItemActions({
 }
 
 export function ToolkitCatalogSection() {
+  const { lang, t } = useI18n();
   const [catalog, setCatalog] = useState<ToolkitCatalog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<CategoryFilter>('all');
@@ -243,7 +248,7 @@ export function ToolkitCatalogSection() {
         if (json.success) {
           setCatalog(json.data as ToolkitCatalog);
           setStoreCatalog(json.data as ToolkitCatalog);
-        } else setError(json.error ?? 'Неизвестная ошибка');
+        } else setError(json.error ?? translate(getLang(), 'catalog.unknownError'));
       })
       .catch((e) => !cancelled && setError(String(e)));
     return () => {
@@ -320,23 +325,23 @@ export function ToolkitCatalogSection() {
       const text = await file.text();
       const imported = parseFavoritesImport(text);
       if (!imported) {
-        toast.error('Некорректный файл — ожидается JSON экспорта избранного');
+        toast.error(t('toast.importInvalid'));
         return;
       }
       const known = imported.filter((p) => allItems.some((i) => i.path === p));
       if (known.length === 0) {
-        toast.error('В файле нет ни одного пути из этого каталога');
+        toast.error(t('toast.importNoneKnown'));
         return;
       }
       const added = importMany(known);
       const dupes = known.length - added;
       const unknown = imported.length - known.length;
-      const parts = [`+${added} новых`];
-      if (dupes > 0) parts.push(`${dupes} уже были`);
-      if (unknown > 0) parts.push(`${unknown} не найдено в каталоге`);
-      toast.success(`Импорт избранного: ${parts.join(' · ')}`);
+      const parts = [t('import.new', { n: added })];
+      if (dupes > 0) parts.push(t('import.existing', { n: dupes }));
+      if (unknown > 0) parts.push(t('import.unknown', { n: unknown }));
+      toast.success(t('toast.importOk', { parts: parts.join(' · ') }));
     } catch {
-      toast.error('Не удалось прочитать файл');
+      toast.error(t('toast.importReadFailed'));
     }
   };
 
@@ -347,13 +352,13 @@ export function ToolkitCatalogSection() {
   const pickRandom = () => {
     const pool = filteredRef.current;
     if (pool.length === 0) {
-      toast.error('Нет конфигов для случайного выбора');
+      toast.error(translate(getLang(), 'toast.randomEmpty'));
       return;
     }
     const item = pool[Math.floor(Math.random() * pool.length)];
     setSelectedPath(item.path);
     if (isMobile) setMobilePreview(true);
-    toast.success(`Случайный выбор: ${item.name}`);
+    toast.success(translate(getLang(), 'toast.randomPick', { name: item.name }));
     scrollToCatalog();
   };
 
@@ -427,10 +432,13 @@ export function ToolkitCatalogSection() {
     const text = cat.items
       .map((item) => `===== ${item.path} =====\n\n${item.content}`)
       .join('\n\n\n');
+    const catLabel = lang === 'en' ? cat.labelEn : cat.label;
     navigator.clipboard
       .writeText(text)
-      .then(() => toast.success(`Скопировано ${cat.items.length} файлов категории «${cat.label}»`))
-      .catch(() => toast.error('Не удалось скопировать'));
+      .then(() =>
+        toast.success(translate(getLang(), 'toast.categoryCopied', { n: cat.items.length, cat: catLabel }))
+      )
+      .catch(() => toast.error(translate(getLang(), 'toast.copyFailed')));
   };
 
   /* Store-driven flows from the command palette */
@@ -464,13 +472,8 @@ export function ToolkitCatalogSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
           index="01"
-          title="Каталог конфигов"
-          description={
-            <>
-              Все {catalog?.totalItems ?? '…'} файлов тулкита. Ищите, просматривайте, копируйте и
-              скачивайте — каждый файл готов к использованию.
-            </>
-          }
+          title={t('catalog.title')}
+          description={t('catalog.desc', { n: catalog?.totalItems ?? '…' })}
         />
 
         {/* Toolbar */}
@@ -481,13 +484,13 @@ export function ToolkitCatalogSection() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Поиск: tdd, security, hooks, z-ai…"
-                aria-label="Поиск по каталогу"
+                placeholder={t('catalog.searchPh')}
+                aria-label={t('catalog.searchAria')}
                 className="h-10 bg-card pl-9 pr-20"
               />
               {query ? (
                 <button
-                  aria-label="Очистить поиск"
+                  aria-label={t('catalog.clearSearch')}
                   onClick={() => setQuery('')}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
@@ -495,8 +498,8 @@ export function ToolkitCatalogSection() {
                 </button>
               ) : (
                 <button
-                  aria-label="Открыть палитру команд (Cmd+K)"
-                  title="Палитра команд — ⌘K"
+                  aria-label={t('aria.openPalette')}
+                  title={t('tip.palette')}
                   onClick={() => setPaletteOpen(true)}
                   className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                 >
@@ -505,23 +508,23 @@ export function ToolkitCatalogSection() {
                 </button>
               )}
             </div>
-            <Hint label="Случайный конфиг">
+            <Hint label={t('catalog.random')}>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-10 w-10 shrink-0"
-                aria-label="Случайный конфиг"
+                aria-label={t('catalog.random')}
                 onClick={pickRandom}
               >
                 <Shuffle className="h-4 w-4" />
               </Button>
             </Hint>
-            <Hint label="Сравнить два конфига (diff)">
+            <Hint label={t('catalog.compare')}>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-10 w-10 shrink-0"
-                aria-label="Сравнить два конфига"
+                aria-label={t('catalog.compare')}
                 onClick={() => openCompare(selected?.path ?? null)}
               >
                 <GitCompareArrows className="h-4 w-4" />
@@ -529,7 +532,7 @@ export function ToolkitCatalogSection() {
             </Hint>
           </div>
 
-          <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Фильтр по категориям">
+          <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={t('catalog.filterAria')}>
             <button
               role="tab"
               aria-selected={category === 'all'}
@@ -544,7 +547,7 @@ export function ToolkitCatalogSection() {
                   : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'
               )}
             >
-              Все · {allItems.length}
+              {t('catalog.allTab', { n: allItems.length })}
             </button>
             {favorites.length > 0 && (
               <button
@@ -559,7 +562,7 @@ export function ToolkitCatalogSection() {
                 )}
               >
                 <Star className="h-3.5 w-3.5 fill-current" />
-                Избранное · {favorites.length}
+                {t('catalog.favTab', { n: favorites.length })}
               </button>
             )}
             {catalog?.categories.map((cat) => {
@@ -579,7 +582,7 @@ export function ToolkitCatalogSection() {
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  {cat.label} · {counts.get(cat.id) ?? 0}
+                  {(lang === 'en' ? cat.labelEn : cat.label)} · {counts.get(cat.id) ?? 0}
                 </button>
               );
             })}
@@ -587,23 +590,25 @@ export function ToolkitCatalogSection() {
 
           {activeCategory && (
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="min-w-0 text-xs text-muted-foreground">{activeCategory.description}</p>
+              <p className="min-w-0 text-xs text-muted-foreground">
+                {lang === 'en' && activeCategory.descriptionEn ? activeCategory.descriptionEn : activeCategory.description}
+              </p>
               <div className="flex shrink-0 items-center gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 gap-1.5 px-2.5 text-xs"
-                  title="Скопировать все файлы категории (с разделителями)"
+                  title={t('catalog.copyCategoryTitle')}
                   onClick={() => copyCategory(activeCategory)}
                 >
                   <CopyPlus className="h-3.5 w-3.5" />
-                  Копировать категорию
+                  {t('catalog.copyCategory')}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 gap-1.5 px-2.5 text-xs"
-                  title="Скачать все файлы категории ZIP-архивом"
+                  title={t('catalog.zipTitle')}
                   onClick={() => downloadItemsZip(activeCategory.items, `ezc-${activeCategory.id}.zip`)}
                 >
                   <FileArchive className="h-3.5 w-3.5" />
@@ -616,7 +621,7 @@ export function ToolkitCatalogSection() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Star className="h-3.5 w-3.5 fill-current text-yellow-400" />
-                Показаны только избранные конфиги ({favorites.length})
+                {t('catalog.favOnly', { n: favorites.length })}
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <input
@@ -632,22 +637,22 @@ export function ToolkitCatalogSection() {
                   variant="outline"
                   size="sm"
                   className="h-7 gap-1.5 px-2.5 text-xs"
-                  title="Импортировать избранное из JSON (экспорт этого сайта или массив путей)"
+                  title={t('catalog.importTitle')}
                   onClick={() => importInputRef.current?.click()}
                 >
                   <FileUp className="h-3.5 w-3.5" />
-                  Импорт
+                  {t('catalog.import')}
                 </Button>
                 {favorites.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
                     className="h-7 gap-1.5 px-2.5 text-xs"
-                    title="Скачать избранное как JSON (пути + метаданные)"
+                    title={t('catalog.exportFavTitle')}
                     onClick={() => downloadFavoritesJson(favorites, allItems)}
                   >
                     <Braces className="h-3.5 w-3.5" />
-                    Экспорт избранного
+                    {t('catalog.exportFav')}
                   </Button>
                 )}
               </div>
@@ -660,7 +665,7 @@ export function ToolkitCatalogSection() {
           <div className="mb-4 flex min-w-0 flex-wrap items-center gap-1.5">
             <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <History className="h-3.5 w-3.5" />
-              Недавние:
+              {t('catalog.recent')}
             </span>
             {recentItems.map((item) => (
               <button
@@ -680,8 +685,8 @@ export function ToolkitCatalogSection() {
             ))}
             <button
               type="button"
-              aria-label="Очистить историю просмотров"
-              title="Очистить историю просмотров"
+              aria-label={t('catalog.clearRecent')}
+              title={t('catalog.clearRecent')}
               onClick={clearRecent}
               className="rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
             >
@@ -700,7 +705,7 @@ export function ToolkitCatalogSection() {
               className="mt-4"
               onClick={() => window.location.reload()}
             >
-              Перезагрузить
+              {t('catalog.reload')}
             </Button>
           </Card>
         ) : !catalog ? (
@@ -717,9 +722,9 @@ export function ToolkitCatalogSection() {
             {/* List */}
             <div className="flex min-w-0 flex-col">
               <p className="mb-2 text-xs text-muted-foreground">
-                Найдено: <span className="font-semibold text-foreground">{filtered.length}</span>
+                {t('catalog.found')} <span className="font-semibold text-foreground">{filtered.length}</span>
                 <span className="ml-2 hidden font-mono text-[10px] text-muted-foreground/60 lg:inline">
-                  ↑/↓ или j/k — навигация
+                  {t('catalog.navHint')}
                 </span>
               </p>
               <div
@@ -731,8 +736,8 @@ export function ToolkitCatalogSection() {
                     <SearchX className="h-8 w-8 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       {favOnly
-                        ? 'В избранном пока пусто — добавьте конфиги звёздочкой ★'
-                        : `Ничего не найдено по запросу «${query}»`}
+                        ? t('catalog.emptyFav')
+                        : t('catalog.emptyQuery', { q: query })}
                     </p>
                     <Button
                       variant="outline"
@@ -743,7 +748,7 @@ export function ToolkitCatalogSection() {
                         setFavOnly(false);
                       }}
                     >
-                      Сбросить фильтры
+                      {t('catalog.resetFilters')}
                     </Button>
                   </Card>
                 ) : (
@@ -768,7 +773,7 @@ export function ToolkitCatalogSection() {
                         className={cn(
                           'group relative w-full cursor-pointer rounded-xl border border-l-2 p-3.5 text-left transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           active
-                            ? 'border-primary/60 border-l-primary bg-primary/10 shadow-sm'
+                            ? 'border-primary/60 border-l-primary bg-gradient-to-r from-primary/[0.12] to-primary/[0.03] shadow-sm'
                             : 'border-border/70 border-l-transparent bg-card/60 hover:border-primary/40 hover:bg-card'
                         )}
                       >
@@ -797,14 +802,14 @@ export function ToolkitCatalogSection() {
                             <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground/70">
                               <span className="min-w-0 truncate font-mono">{item.path}</span>
                               <span>·</span>
-                              <span className="shrink-0">{item.lines} стр.</span>
+                              <span className="shrink-0">{item.lines} {t('catalog.linesShort')}</span>
                             </div>
                           </div>
                         </div>
                         <button
                           type="button"
-                          aria-label={fav ? 'Убрать из избранного' : 'В избранное'}
-                          title={fav ? 'Убрать из избранного' : 'В избранное'}
+                          aria-label={fav ? t('item.favRemove') : t('item.favAdd')}
+                          title={fav ? t('item.favRemove') : t('item.favAdd')}
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleFavorite(item.path);
@@ -869,13 +874,13 @@ export function ToolkitCatalogSection() {
               ) : (
                 <div className="flex h-64 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
                   <MousePointerClick className="h-8 w-8 text-muted-foreground/40" />
-                  <p>{filtered.length > 0 ? 'Выберите файл слева' : 'Здесь появится выбранный конфиг'}</p>
+                  <p>{filtered.length > 0 ? t('catalog.selectFile') : t('catalog.emptyPreview')}</p>
                   {filtered.length > 0 && (
                     <p className="flex flex-wrap items-center justify-center gap-1 text-xs">
-                      или листайте
+                      {t('catalog.orBrowse')}
                       <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">↑/↓</kbd>
                       <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">j/k</kbd>
-                      и открывайте
+                      {t('catalog.andOpen')}
                       <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">Enter</kbd>
                     </p>
                   )}

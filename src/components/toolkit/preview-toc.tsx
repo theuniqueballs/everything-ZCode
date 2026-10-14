@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ListTree } from 'lucide-react';
 import { extractToc } from '@/lib/toc';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 /**
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
  * at the preview scroll container.
  */
 export function PreviewToc({ body, containerId }: { body: string; containerId: string }) {
+  const { t } = useI18n();
   const entries = useMemo(() => extractToc(body), [body]);
   const [open, setOpen] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -66,13 +68,13 @@ export function PreviewToc({ body, containerId }: { body: string; containerId: s
         className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <ListTree className="h-3.5 w-3.5 text-primary" />
-        Содержание · {entries.length}
+        {t('toc.title', { n: entries.length })}
         <ChevronDown
           className={cn('ml-auto h-3.5 w-3.5 transition-transform duration-200', open && 'rotate-180')}
         />
       </button>
       {open && (
-        <nav aria-label="Содержание конфига" className="border-t border-border/60 px-1.5 py-1.5">
+        <nav aria-label={t('toc.nav')} className="border-t border-border/60 px-1.5 py-1.5">
           <ul className="space-y-0.5">
             {entries.map((e) => (
               <li key={e.id}>

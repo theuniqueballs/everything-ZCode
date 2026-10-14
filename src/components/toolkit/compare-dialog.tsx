@@ -25,18 +25,9 @@ import { useUiStore } from '@/lib/store';
 import { parseFrontmatter } from '@/lib/frontmatter';
 import { diffLines, diffStats, formatUnifiedDiff } from '@/lib/diff';
 import { findSimilar } from '@/lib/similar';
+import { useI18n } from '@/lib/i18n';
 import type { ToolkitCategory, ToolkitItem } from '@/lib/toolkit-types';
 import { cn } from '@/lib/utils';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  agents: 'Агенты',
-  commands: 'Команды',
-  skills: 'Скиллы',
-  rules: 'Правила',
-  hooks: 'Хуки',
-  contexts: 'Контексты',
-  settings: 'Настройки',
-};
 
 /** Render cap — configs are small, but stay defensive. */
 const MAX_ROWS = 1500;
@@ -54,6 +45,7 @@ function ConfigSelect({
   placeholder: string;
   ariaLabel: string;
 }) {
+  const { lang } = useI18n();
   return (
     <Select value={value ?? undefined} onValueChange={onChange}>
       <SelectTrigger aria-label={ariaLabel} className="h-10 min-w-0 flex-1 bg-card font-mono text-xs">
@@ -63,7 +55,7 @@ function ConfigSelect({
         {categories.map((cat) => (
           <SelectGroup key={cat.id}>
             <SelectLabel className="text-[11px] text-muted-foreground">
-              {CATEGORY_LABELS[cat.id] ?? cat.label}
+              {lang === 'en' ? cat.labelEn : cat.label}
             </SelectLabel>
             {cat.items.map((item) => (
               <SelectItem key={item.path} value={item.path} className="font-mono text-xs">
@@ -82,6 +74,7 @@ function ConfigSelect({
  * Diff runs on frontmatter-stripped bodies so only real content counts.
  */
 export function CompareDialog() {
+  const { t } = useI18n();
   const { compareOpen, setCompareOpen, compareInitPath, compareInitPathB, catalog } = useUiStore();
   const [pathA, setPathA] = useState<string | null>(null);
   const [pathB, setPathB] = useState<string | null>(null);
@@ -137,10 +130,10 @@ export function CompareDialog() {
     try {
       await navigator.clipboard.writeText(formatUnifiedDiff(itemA.path, itemB.path, lines));
       setCopied(true);
-      toast.success('Diff скопирован в буфер обмена');
+      toast.success(t('compare.toastCopied'));
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error('Не удалось скопировать diff');
+      toast.error(t('compare.toastFailed'));
     }
   };
 
@@ -150,10 +143,10 @@ export function CompareDialog() {
         <DialogHeader className="border-b border-border bg-muted/30 p-5 text-left">
           <DialogTitle className="flex items-center gap-2 text-base">
             <GitCompareArrows className="h-4 w-4 text-primary" />
-            Сравнение конфигов
+            {t('compare.title')}
           </DialogTitle>
           <DialogDescription className="mt-1 text-xs">
-            Unified diff по содержимому (frontmatter не учитывается). Выберите два конфига.
+            {t('compare.desc')}
           </DialogDescription>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -161,15 +154,15 @@ export function CompareDialog() {
               value={pathA}
               onChange={setPathA}
               categories={categories}
-              placeholder="Конфиг A (база)"
-              ariaLabel="Конфиг A — база сравнения"
+              placeholder={t('compare.phA')}
+              ariaLabel={t('compare.ariaA')}
             />
             <Button
               variant="outline"
               size="icon"
               className="mx-auto h-8 w-8 shrink-0 sm:h-10 sm:w-10"
-              aria-label="Поменять A и B местами"
-              title="Поменять местами"
+              aria-label={t('compare.swap')}
+              title={t('compare.swapTitle')}
               onClick={() => {
                 setPathA(pathB);
                 setPathB(pathA);
@@ -181,8 +174,8 @@ export function CompareDialog() {
               value={pathB}
               onChange={setPathB}
               categories={categories}
-              placeholder="Конфиг B (сравнение)"
-              ariaLabel="Конфиг B — с чем сравнивать"
+              placeholder={t('compare.phB')}
+              ariaLabel={t('compare.ariaB')}
             />
           </div>
 
@@ -190,13 +183,13 @@ export function CompareDialog() {
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
               <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
                 <Scale className="h-3 w-3" />
-                похожесть {stats.similarity}%
+                {t('compare.similarity', { n: stats.similarity })}
               </Badge>
               <Badge className="gap-1 bg-emerald-500/15 font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
-                +{stats.added} добавлено
+                {t('compare.added', { n: stats.added })}
               </Badge>
               <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
-                −{stats.removed} удалено
+                {t('compare.removed', { n: stats.removed })}
               </Badge>
               <Button
                 size="sm"
@@ -205,7 +198,7 @@ export function CompareDialog() {
                 onClick={copyDiff}
               >
                 {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
-                {copied ? 'Скопировано' : 'Копировать diff'}
+                {copied ? t('compare.copied') : t('compare.copyDiff')}
               </Button>
             </div>
           )}
@@ -217,18 +210,18 @@ export function CompareDialog() {
               <GitCompareArrows className="h-8 w-8 text-muted-foreground/40" />
               <p className="max-w-xs text-sm text-muted-foreground">
                 {!itemA && !itemB
-                  ? 'Выберите два конфига для сравнения.'
+                  ? t('compare.emptyBoth')
                   : !itemA
-                    ? 'Выберите конфиг A — базу сравнения.'
-                    : 'Выберите конфиг B — с чем сравнивать.'}
+                    ? t('compare.emptyA')
+                    : t('compare.emptyB')}
               </p>
             </div>
           ) : stats && stats.added + stats.removed === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center gap-2 text-center">
               <Check className="h-8 w-8 text-primary" />
-              <p className="text-sm font-medium">Конфиги идентичны по содержимому</p>
+              <p className="text-sm font-medium">{t('compare.identical')}</p>
               <p className="text-xs text-muted-foreground">
-                {itemA.name} и {itemB.name} различаются только frontmatter/метаданными
+                {t('compare.identicalDesc', { a: itemA.name, b: itemB.name })}
               </p>
             </div>
           ) : (
@@ -258,7 +251,7 @@ export function CompareDialog() {
               ))}
               {lines.length > MAX_ROWS && (
                 <div className="border-t border-border px-2 py-1.5 text-center text-muted-foreground">
-                  … показано {MAX_ROWS} из {lines.length} строк
+                  {t('compare.truncated', { n: MAX_ROWS, m: lines.length })}
                 </div>
               )}
             </div>

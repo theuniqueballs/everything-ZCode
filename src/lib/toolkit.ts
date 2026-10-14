@@ -12,48 +12,55 @@ const TOOLKIT_ROOT = path.join(process.cwd(), 'toolkit');
 
 export const CATEGORY_META: Record<
   ToolkitCategoryId,
-  { label: string; labelEn: string; description: string; icon: string }
+  { label: string; labelEn: string; description: string; descriptionEn: string; icon: string }
 > = {
   agents: {
     label: 'Агенты',
     labelEn: 'Agents',
     description: 'Субагенты с ограниченной зоной ответственности — делегируйте им через Task tool, чтобы защитить свой контекст.',
+    descriptionEn: 'Subagents with a narrow scope of responsibility — delegate to them via the Task tool to protect your context.',
     icon: 'Bot',
   },
   commands: {
     label: 'Команды',
     labelEn: 'Commands',
     description: 'Slash-команды для быстрых повторяемых сценариев: планирование, ревью, верификация, обучение.',
+    descriptionEn: 'Slash commands for fast repeatable scenarios: planning, review, verification, learning.',
     icon: 'Slash',
   },
   skills: {
     label: 'Скиллы',
     labelEn: 'Skills',
     description: 'Знания и паттерны предметной области, которые сессия подгружает автоматически при совпадении задачи.',
+    descriptionEn: 'Domain knowledge and patterns a session loads automatically when the task matches.',
     icon: 'Sparkles',
   },
   rules: {
     label: 'Правила',
     labelEn: 'Rules',
     description: 'Всегда действующие guidelines: безопасность, стиль, верификация, git-гигиена, делегирование.',
+    descriptionEn: 'Always-on guidelines: security, style, verification, git hygiene, delegation.',
     icon: 'Scale',
   },
   hooks: {
     label: 'Хуки',
     labelEn: 'Hooks',
     description: 'Автоматизации на событиях: защита от footgun-ов, напоминания о checkpoint, восстановление памяти.',
+    descriptionEn: 'Event-driven automations: footgun protection, checkpoint reminders, memory recovery.',
     icon: 'Webhook',
   },
   contexts: {
     label: 'Контексты',
     labelEn: 'Contexts',
     description: 'Оверлеи системного промпта по режимам работы: разработка, ревью, исследование.',
+    descriptionEn: 'System-prompt overlays per working mode: development, review, research.',
     icon: 'Layers',
   },
   settings: {
     label: 'Настройки',
     labelEn: 'Settings',
     description: 'Готовый settings.json: права, хуки, MCP-серверы, предпочтения моделей GLM.',
+    descriptionEn: 'A ready settings.json: permissions, hooks, MCP servers, GLM model preferences.',
     icon: 'Settings2',
   },
 };

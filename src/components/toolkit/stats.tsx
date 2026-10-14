@@ -6,17 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SectionHeading } from './section-heading';
 import { AnimatedCounter } from './animated-counter';
 import { formatBytes } from '@/lib/frontmatter';
+import { useI18n, categoryLabel } from '@/lib/i18n';
 import type { ToolkitCatalog, ToolkitCategoryId } from '@/lib/toolkit-types';
-
-const CATEGORY_LABELS: Record<ToolkitCategoryId, string> = {
-  agents: 'Агенты',
-  commands: 'Команды',
-  skills: 'Скиллы',
-  rules: 'Правила',
-  hooks: 'Хуки',
-  contexts: 'Контексты',
-  settings: 'Настройки',
-};
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -26,6 +17,7 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
  * Server-loaded catalog keeps it deterministic and SSR-friendly.
  */
 export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
+  const { lang, t } = useI18n();
   if (!catalog) return null;
 
   const categories = catalog.categories;
@@ -42,9 +34,9 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
   const biggest = [...categories].sort((a, b) => b.items.length - a.items.length)[0];
 
   const summary = [
-    { icon: FileCode2, label: 'Всего строк', value: totalLines, suffix: '' },
-    { icon: Gauge, label: 'Суммарный размер', value: totalBytes, suffix: '', isBytes: true },
-    { icon: BarChart3, label: 'В среднем строк', value: avgLines, suffix: '' },
+    { icon: FileCode2, label: t('stats.totalLines'), value: totalLines, suffix: '' },
+    { icon: Gauge, label: t('stats.totalSize'), value: totalBytes, suffix: '', isBytes: true },
+    { icon: BarChart3, label: t('stats.avgLines'), value: avgLines, suffix: '' },
   ] as const;
 
   return (
@@ -52,8 +44,8 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
           index="02"
-          title="Аналитика тулкита"
-          description="Распределение конфигов по категориям, крупнейшие файлы и агрегаты — вся статистика считается из фактического содержимого каталога."
+          title={t('stats.title')}
+          description={t('stats.desc')}
         />
 
         <div className="grid gap-4 lg:grid-cols-5">
@@ -62,9 +54,9 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base">
                 <BarChart3 className="h-4 w-4 text-primary" />
-                Конфиги по категориям
+                {t('stats.byCategory')}
               </CardTitle>
-              <CardDescription>Сколько конфигов в каждой из 7 категорий</CardDescription>
+              <CardDescription>{t('stats.byCategoryDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {categories.map((cat, idx) => {
@@ -74,14 +66,14 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
                   <div key={cat.id} className="group">
                     <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
                       <span className="font-medium text-foreground/90 group-hover:text-foreground">
-                        {CATEGORY_LABELS[cat.id]}
+                        {categoryLabel(cat.id, lang)}
                       </span>
                       <span className="font-mono text-muted-foreground">{count}</span>
                     </div>
                     <div
-                      className="h-2.5 overflow-hidden rounded-full bg-muted"
+                      className="h-2.5 overflow-hidden rounded-full bg-muted transition-shadow group-hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]"
                       role="img"
-                      aria-label={`${CATEGORY_LABELS[cat.id]}: ${count} конфигов`}
+                      aria-label={t('stats.ariaCat', { cat: categoryLabel(cat.id, lang), n: count })}
                     >
                       <motion.div
                         className="h-full rounded-full bg-gradient-to-r from-primary/70 via-primary to-emerald-400"
@@ -102,9 +94,9 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Trophy className="h-4 w-4 text-primary" />
-                Топ-5 крупнейших
+                {t('stats.top5')}
               </CardTitle>
-              <CardDescription>Конфиги с наибольшим числом строк</CardDescription>
+              <CardDescription>{t('stats.top5Desc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {top5.map((item, idx) => {
@@ -119,9 +111,9 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
                       <span className="shrink-0 font-mono text-muted-foreground">{item.lines}</span>
                     </div>
                     <div
-                      className="h-2.5 overflow-hidden rounded-full bg-muted"
+                      className="h-2.5 overflow-hidden rounded-full bg-muted transition-shadow group-hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]"
                       role="img"
-                      aria-label={`${item.name}: ${item.lines} строк`}
+                      aria-label={t('stats.ariaItem', { name: item.name, n: item.lines })}
                     >
                       <motion.div
                         className="h-full rounded-full bg-gradient-to-r from-emerald-400/70 to-primary"
@@ -165,11 +157,12 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
         </div>
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Самая наполненная категория —{' '}
-          <span className="font-semibold text-foreground">{CATEGORY_LABELS[biggest.id]}</span> ({biggest.items.length}{' '}
-          конфигов); медианный размер файла —{' '}
+          {t('stats.footerA')}
+          <span className="font-semibold text-foreground">{categoryLabel(biggest.id, lang)}</span> ({t('stats.footerCount', { n: biggest.items.length })});{t('stats.footerB')}
           <span className="font-semibold text-foreground">
-            {allItems.map((i) => i.lines).sort((a, b) => a - b)[Math.floor(allItems.length / 2)]} строк
+            {t('stats.footerLines', {
+              n: allItems.map((i) => i.lines).sort((a, b) => a - b)[Math.floor(allItems.length / 2)],
+            })}
           </span>
           .
         </p>

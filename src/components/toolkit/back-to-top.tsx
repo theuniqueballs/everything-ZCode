@@ -5,9 +5,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useI18n } from '@/lib/i18n';
 
 /** Floating "back to top" button — appears after the first viewport of scrolling. */
 export function BackToTop() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -43,14 +45,14 @@ export function BackToTop() {
             <TooltipTrigger asChild>
               <Button
                 size="icon"
-                aria-label="Наверх"
+                aria-label={t('totop')}
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="h-10 w-10 rounded-full border border-border/60 bg-card/90 shadow-lg backdrop-blur transition-colors hover:border-primary/40 hover:text-primary"
               >
                 <ArrowUp className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="left">Наверх</TooltipContent>
+            <TooltipContent side="left">{t('totop')}</TooltipContent>
           </Tooltip>
         </motion.div>
       )}

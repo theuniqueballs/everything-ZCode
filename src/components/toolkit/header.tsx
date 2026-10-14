@@ -7,19 +7,27 @@ import { Badge } from '@/components/ui/badge';
 import { Moon, Sun, Github, Terminal, Command, Keyboard } from 'lucide-react';
 import { useUiStore } from '@/lib/store';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-const NAV = [
-  { href: '#catalog', label: 'Каталог' },
-  { href: '#concepts', label: 'Концепты' },
-  { href: '#install', label: 'Установка' },
-  { href: '#principles', label: 'Принципы' },
-];
+import { useI18n } from '@/lib/i18n';
+import { LangToggle } from './lang-toggle';
 
 export function ToolkitHeader() {
   const { resolvedTheme, setTheme } = useTheme();
+  const { lang, t } = useI18n();
   const setPaletteOpen = useUiStore((s) => s.setPaletteOpen);
   const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
   const progressRef = useRef<HTMLDivElement>(null);
+
+  /* Keep <html lang> in sync with the UI language. */
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  const NAV = [
+    { href: '#catalog', label: t('nav.catalog') },
+    { href: '#concepts', label: t('nav.concepts') },
+    { href: '#install', label: t('nav.install') },
+    { href: '#principles', label: t('nav.principles') },
+  ];
 
   /* Scroll progress bar — direct DOM write via rAF, no re-renders. */
   useEffect(() => {
@@ -55,13 +63,11 @@ export function ToolkitHeader() {
           </span>
           <span className="flex min-w-0 flex-col leading-none">
             <span className="truncate text-sm font-bold tracking-tight">Everything ZCode</span>
-            <span className="truncate text-[11px] text-muted-foreground">
-              конфиги для Z.ai Code
-            </span>
+            <span className="truncate text-[11px] text-muted-foreground">{t('header.subtitle')}</span>
           </span>
         </a>
 
-        <nav aria-label="Основная навигация" className="hidden items-center gap-1 md:flex">
+        <nav aria-label={t('aria.mainNav')} className="hidden items-center gap-1 md:flex">
           {NAV.map((item) => (
             <a
               key={item.href}
@@ -76,38 +82,39 @@ export function ToolkitHeader() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPaletteOpen(true)}
-            aria-label="Открыть палитру команд (Cmd+K)"
-            title="Палитра команд — ⌘K"
+            aria-label={t('aria.openPalette')}
+            title={t('tip.palette')}
             className="hidden items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground md:flex"
           >
             <Command className="h-3.5 w-3.5" />
-            Поиск
+            {t('header.search')}
             <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
               ⌘K
             </kbd>
           </button>
           <Badge variant="outline" className="hidden font-mono text-[11px] text-primary sm:inline-flex">
-            v1.7
+            v1.8
           </Badge>
+          <LangToggle />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9"
-                aria-label="Горячие клавиши (?)"
+                aria-label={t('aria.shortcuts')}
                 onClick={() => setShortcutsOpen(true)}
               >
                 <Keyboard className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Горячие клавиши — ?</TooltipContent>
+            <TooltipContent side="bottom">{t('tip.shortcuts')}</TooltipContent>
           </Tooltip>
           <a
             href="https://github.com/worldflowai/everything-claude-code"
             target="_blank"
             rel="noreferrer"
-            aria-label="Референс-репозиторий на GitHub"
+            aria-label={t('aria.githubRef')}
             className="hidden sm:block"
           >
             <Tooltip>
@@ -116,7 +123,7 @@ export function ToolkitHeader() {
                   <Github className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Референс: everything-claude-code</TooltipContent>
+              <TooltipContent side="bottom">{t('tip.githubRef')}</TooltipContent>
             </Tooltip>
           </a>
           <Tooltip>
@@ -125,19 +132,19 @@ export function ToolkitHeader() {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9"
-                aria-label="Переключить тему"
+                aria-label={t('aria.toggleTheme')}
                 onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
               >
                 <Sun className="hidden h-4 w-4 dark:block" />
                 <Moon className="h-4 w-4 dark:hidden" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Светлая / тёмная тема</TooltipContent>
+            <TooltipContent side="bottom">{t('tip.theme')}</TooltipContent>
           </Tooltip>
           <a href="#catalog" className="hidden lg:block">
             <Button size="sm" className="h-9 gap-1.5">
               <Terminal className="h-3.5 w-3.5" />
-              Открыть каталог
+              {t('header.openCatalog')}
             </Button>
           </a>
         </div>
@@ -153,7 +160,7 @@ export function ToolkitHeader() {
 
       {/* Mobile nav */}
       <div className="border-t border-border/60 md:hidden">
-        <nav aria-label="Мобильная навигация" className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 scrollbar-thin">
+        <nav aria-label={t('aria.mobileNav')} className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 scrollbar-thin">
           {NAV.map((item) => (
             <a
               key={item.href}

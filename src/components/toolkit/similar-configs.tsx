@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Sparkles, GitCompareArrows } from 'lucide-react';
 import { findSimilar } from '@/lib/similar';
+import { useI18n } from '@/lib/i18n';
 import type { ToolkitItem } from '@/lib/toolkit-types';
 import {
   Tooltip,
@@ -30,6 +31,7 @@ export function SimilarConfigs({
   onCompare?: (pathB: string) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   const similar = useMemo(() => findSimilar(current, all, 3), [current, all]);
 
   if (similar.length === 0) return null;
@@ -39,7 +41,7 @@ export function SimilarConfigs({
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           <Sparkles className="h-3 w-3 text-primary" />
-          Похожие:
+          {t('similar.label')}
         </span>
         {similar.map(({ item, score }) => (
           <span
@@ -55,7 +57,7 @@ export function SimilarConfigs({
                 >
                   <span className="min-w-0 truncate">{item.name}</span>
                   <span
-                    aria-label={`Похожесть ${Math.round(score * 100)}%`}
+                    aria-label={t('similar.score', { n: Math.round(score * 100) })}
                     className="shrink-0 rounded-full bg-primary/10 px-1.5 py-px text-[9px] font-bold text-primary transition-colors group-hover:bg-primary/20"
                   >
                     {Math.min(99, Math.round(score * 100))}%
@@ -71,8 +73,8 @@ export function SimilarConfigs({
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    aria-label={`Сравнить ${current.name} и ${item.name}`}
-                    title={`Diff: ${current.name} ↔ ${item.name}`}
+                    aria-label={t('similar.compare', { a: current.name, b: item.name })}
+                    title={t('similar.diff', { a: current.name, b: item.name })}
                     onClick={() => onCompare(item.path)}
                     className="flex h-full shrink-0 items-center border-l border-border py-1 pl-1.5 pr-2 text-muted-foreground/60 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:text-primary"
                   >
@@ -80,7 +82,7 @@ export function SimilarConfigs({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
-                  Diff: {current.name} ↔ {item.name}
+                  {t('similar.diff', { a: current.name, b: item.name })}
                 </TooltipContent>
               </Tooltip>
             )}

@@ -3,6 +3,7 @@
 import JSZip from 'jszip';
 import { toast } from 'sonner';
 import type { ToolkitItem } from './toolkit-types';
+import { getLang, translate } from './i18n';
 
 /** Trigger a client-side download of a text blob. */
 function downloadBlob(blob: Blob, fileName: string) {
@@ -19,8 +20,9 @@ function downloadBlob(blob: Blob, fileName: string) {
  * toolkit/ paths, then trigger a client-side download.
  */
 export async function downloadItemsZip(items: ToolkitItem[], zipName: string) {
+  const lang = getLang();
   if (items.length === 0) {
-    toast.error('Нет файлов для архивации');
+    toast.error(translate(lang, 'toast.zipEmpty'));
     return;
   }
   try {
@@ -30,9 +32,9 @@ export async function downloadItemsZip(items: ToolkitItem[], zipName: string) {
     }
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
     downloadBlob(blob, zipName);
-    toast.success(`Скачано: ${zipName} (${items.length} файлов)`);
+    toast.success(translate(lang, 'toast.zipDownloaded', { name: zipName, n: items.length }));
   } catch {
-    toast.error('Не удалось собрать ZIP-архив');
+    toast.error(translate(lang, 'toast.zipFailed'));
   }
 }
 
@@ -74,8 +76,9 @@ export function downloadFavoritesJson(
   favoritePaths: string[],
   allItems: ToolkitItem[],
 ) {
+  const lang = getLang();
   if (favoritePaths.length === 0) {
-    toast.error('Избранное пусто — сначала добавьте конфиги ★');
+    toast.error(translate(lang, 'toast.favEmpty'));
     return;
   }
   const byPath = new Map(allItems.map((item) => [item.path, item]));
@@ -100,8 +103,8 @@ export function downloadFavoritesJson(
       type: 'application/json',
     });
     downloadBlob(blob, 'ezc-favorites.json');
-    toast.success(`Экспортировано избранное: ${favoritePaths.length} конфигов`);
+    toast.success(translate(lang, 'toast.favExported', { n: favoritePaths.length }));
   } catch {
-    toast.error('Не удалось экспортировать избранное');
+    toast.error(translate(lang, 'toast.favExportFailed'));
   }
 }

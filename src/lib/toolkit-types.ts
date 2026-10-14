@@ -30,6 +30,7 @@ export interface ToolkitCategory {
   label: string;
   labelEn: string;
   description: string;
+  descriptionEn: string;
   icon: string;
   items: ToolkitItem[];
 }

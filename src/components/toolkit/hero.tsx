@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowDown, Bot, Boxes, FileCode2, Sparkles, Scale, Webhook, Layers } from 'lucide-react';
 import { AnimatedCounter } from './animated-counter';
+import { useI18n } from '@/lib/i18n';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 
 const CATEGORY_ICONS = {
@@ -26,6 +27,7 @@ const enter = (delay: number) => ({
 });
 
 export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
+  const { lang, t } = useI18n();
   const categories = catalog?.categories ?? [];
   const total = catalog?.totalItems ?? 45;
 
@@ -41,7 +43,7 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
           <motion.div {...enter(0)}>
             <Badge variant="outline" className="mb-5 inline-flex max-w-full gap-1.5 whitespace-normal border-primary/40 bg-primary/10 px-3 py-1 text-center text-xs font-medium leading-snug text-primary">
               <Sparkles className="h-3 w-3 shrink-0" />
-              Вдохновлено everything-claude-code · Собрано для Z.ai
+              {t('hero.badge')}
             </Badge>
           </motion.div>
 
@@ -56,21 +58,21 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
 
           <motion.div {...enter(0.16)}>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Полная коллекция production-ready конфигов для ZCode / Z.ai:{' '}
-              <span className="text-foreground">агенты, команды, скиллы, правила, хуки</span> —
-              выработанные в реальной разработке с моделями GLM. Копируй, адаптируй, используй.
+              {t('hero.subA')}{' '}
+              <span className="text-foreground">{t('hero.subHL')}</span>{' '}
+              {t('hero.subB')}
             </p>
           </motion.div>
 
           <motion.div {...enter(0.24)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button size="lg" className="h-11 gap-2 px-6" asChild>
               <a href="#catalog">
-                Смотреть каталог
+                {t('hero.ctaCatalog')}
                 <ArrowDown className="h-4 w-4" />
               </a>
             </Button>
             <Button size="lg" variant="outline" className="h-11 px-6" asChild>
-              <a href="#install">Установка</a>
+              <a href="#install">{t('hero.ctaInstall')}</a>
             </Button>
           </motion.div>
         </div>
@@ -93,7 +95,9 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
                     <div className="text-2xl font-bold">
                       <AnimatedCounter value={cat.items.length} />
                     </div>
-                    <div className="mt-0.5 truncate text-xs text-muted-foreground">{cat.label}</div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {lang === 'en' ? cat.labelEn : cat.label}
+                    </div>
                   </a>
                 );
               })
@@ -109,10 +113,10 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
         <motion.p {...enter(0.4)} className="mt-4 text-center text-xs text-muted-foreground">
           {catalog ? (
             <>
-              <AnimatedCounter value={total} /> файлов · 7 категорий · MIT license
+              <AnimatedCounter value={total} /> {t('hero.total')}
             </>
           ) : (
-            'Загрузка каталога…'
+            t('hero.loading')
           )}
         </motion.p>
       </div>

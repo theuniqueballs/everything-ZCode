@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarDays, Sparkles, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUiStore } from '@/lib/store';
+import { useI18n, categoryLabelSingular } from '@/lib/i18n';
 import type { ToolkitCategoryId } from '@/lib/toolkit-types';
 
 /**
@@ -20,22 +21,21 @@ export interface DailyItem {
   lines: number;
 }
 
-const CATEGORY_LABELS: Record<ToolkitCategoryId, string> = {
-  agents: 'Агент',
-  commands: 'Команда',
-  skills: 'Скилл',
-  rules: 'Правило',
-  hooks: 'Хук',
-  contexts: 'Контекст',
-  settings: 'Настройки',
-};
-
 /**
  * «Конфиг дня» — deterministic pick based on the Europe/Moscow calendar date.
  * Same day ⇒ same config for every visitor; changes at midnight MSK.
+ * The server passes the MSK date as ISO (YYYY-MM-DD); the label is formatted
+ * client-side in the active UI language.
  */
-export function ConfigOfTheDay({ item, dateLabel }: { item: DailyItem | null; dateLabel: string }) {
+export function ConfigOfTheDay({ item, dateISO }: { item: DailyItem | null; dateISO: string }) {
+  const { lang, t } = useI18n();
   const setRequestPath = useUiStore((s) => s.setRequestPath);
+
+  const dateLabel = new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Europe/Moscow',
+  }).format(new Date(`${dateISO}T12:00:00Z`));
 
   if (!item) return null;
 
@@ -45,7 +45,7 @@ export function ConfigOfTheDay({ item, dateLabel }: { item: DailyItem | null; da
   };
 
   return (
-    <section aria-label="Конфиг дня" className="border-b border-border/60 bg-primary/[0.04]">
+    <section aria-label={t('day.aria')} className="border-b border-border/60 bg-primary/[0.04]">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -61,7 +61,7 @@ export function ConfigOfTheDay({ item, dateLabel }: { item: DailyItem | null; da
             <div className="leading-tight">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
                 <Sparkles className="h-3 w-3" />
-                Конфиг дня
+                {t('day.badge')}
               </div>
               <div className="text-[11px] text-muted-foreground">{dateLabel}</div>
             </div>
@@ -72,9 +72,9 @@ export function ConfigOfTheDay({ item, dateLabel }: { item: DailyItem | null; da
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-semibold">{item.name}</span>
               <Badge variant="outline" className="h-5 px-2 text-[10px] text-muted-foreground">
-                {CATEGORY_LABELS[item.category]}
+                {categoryLabelSingular(item.category, lang)}
               </Badge>
-              <span className="text-[11px] text-muted-foreground">{item.lines} строк</span>
+              <span className="text-[11px] text-muted-foreground">{t('day.lines', { n: item.lines })}</span>
             </div>
             <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground" title={item.description}>
               {item.title && item.title !== item.name ? item.title : item.description}
@@ -88,7 +88,7 @@ export function ConfigOfTheDay({ item, dateLabel }: { item: DailyItem | null; da
             className="shrink-0 gap-1.5 border-primary/40 hover:bg-primary/10 hover:text-primary"
             onClick={open}
           >
-            Открыть
+            {t('day.open')}
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Button>
         </motion.div>

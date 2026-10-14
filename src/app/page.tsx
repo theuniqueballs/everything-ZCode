@@ -37,12 +37,12 @@ function pickDailyItem(catalog: ToolkitCatalog | null): DailyItem | null {
   };
 }
 
-function dailyDateLabel(): string {
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'Europe/Moscow',
-  }).format(new Date());
+/**
+ * The Europe/Moscow calendar date (YYYY-MM-DD) used for the daily pick;
+ * the human label is formatted client-side in the active UI language.
+ */
+function dailyDateISO(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(new Date());
 }
 
 /**
@@ -62,7 +62,7 @@ export default function Home() {
       <ToolkitHeader />
       <main className="flex-1">
         <ToolkitHero catalog={catalog} />
-        <ConfigOfTheDay item={pickDailyItem(catalog)} dateLabel={dailyDateLabel()} />
+        <ConfigOfTheDay item={pickDailyItem(catalog)} dateISO={dailyDateISO()} />
         <ToolkitCatalogSection />
         <ToolkitStats catalog={catalog} />
         <ToolkitConcepts />

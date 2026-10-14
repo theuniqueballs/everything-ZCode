@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/command';
 import { useUiStore } from '@/lib/store';
 import { downloadItemsZip } from '@/lib/zip';
+import { useI18n } from '@/lib/i18n';
 import { Highlight } from './highlight';
 import type { ToolkitCategoryId } from '@/lib/toolkit-types';
 
@@ -44,18 +45,11 @@ const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
   settings: Boxes,
 };
 
-const SECTION_LINKS = [
-  { href: '#catalog', label: 'Каталог конфигов' },
-  { href: '#stats', label: 'Аналитика тулкита' },
-  { href: '#concepts', label: 'Ключевые концепты' },
-  { href: '#install', label: 'Установка' },
-  { href: '#principles', label: 'Принципы' },
-];
-
 /**
  * ⌘K command palette: jump to sections, search every config, quick actions.
  */
 export function CommandPalette() {
+  const { t, lang } = useI18n();
   const {
     paletteOpen,
     setPaletteOpen,
@@ -131,6 +125,14 @@ export function CommandPalette() {
     document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const sectionLinks = [
+    { href: '#catalog', label: t('palette.sec.catalog') },
+    { href: '#stats', label: t('palette.sec.stats') },
+    { href: '#concepts', label: t('palette.sec.concepts') },
+    { href: '#install', label: t('palette.sec.install') },
+    { href: '#principles', label: t('palette.sec.principles') },
+  ];
+
   return (
     <CommandDialog
       open={paletteOpen}
@@ -138,25 +140,23 @@ export function CommandPalette() {
       className="max-w-xl"
     >
       <CommandInput
-        placeholder="Поиск конфигов: tdd, security, hooks…"
+        placeholder={t('palette.ph')}
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[70vh] scrollbar-thin">
         <CommandEmpty>
-          <span className="text-sm text-muted-foreground">
-            Ничего не найдено. Попробуйте: «review», «prisma», «hook»…
-          </span>
+          <span className="text-sm text-muted-foreground">{t('palette.empty')}</span>
         </CommandEmpty>
 
         {/* Quick actions */}
-        <CommandGroup heading="Действия">
+        <CommandGroup heading={t('palette.actions')}>
           <CommandItem onSelect={() => { setPaletteOpen(false); triggerRandom(); }}>
             <Shuffle className="mr-2 h-4 w-4" />
-            Случайный конфиг
+            {t('palette.random')}
           </CommandItem>
           <CommandItem onSelect={() => { setPaletteOpen(false); triggerFavorites(); }}>
             <Star className="mr-2 h-4 w-4" />
-            Показать избранное
+            {t('palette.showFav')}
           </CommandItem>
           <CommandItem onSelect={() => { setPaletteOpen(false); setTheme(resolvedTheme === 'dark' ? 'light' : 'dark'); }}>
             {resolvedTheme === 'dark' ? (
@@ -164,7 +164,7 @@ export function CommandPalette() {
             ) : (
               <Moon className="mr-2 h-4 w-4" />
             )}
-            Переключить тему
+            {t('palette.toggleTheme')}
           </CommandItem>
           <CommandItem
             onSelect={() => {
@@ -173,7 +173,7 @@ export function CommandPalette() {
             }}
           >
             <GitCompareArrows className="mr-2 h-4 w-4" />
-            Сравнить два конфига (diff)
+            {t('palette.compare')}
           </CommandItem>
           <CommandItem
             onSelect={() => {
@@ -185,17 +185,17 @@ export function CommandPalette() {
             }}
           >
             <FileArchive className="mr-2 h-4 w-4" />
-            Скачать весь тулкит (ZIP)
+            {t('palette.downloadZip')}
           </CommandItem>
           <CommandItem onSelect={() => { setPaletteOpen(false); setShortcutsOpen(true); }}>
             <Keyboard className="mr-2 h-4 w-4" />
-            Горячие клавиши
+            {t('palette.shortcuts')}
           </CommandItem>
         </CommandGroup>
 
         {/* Sections */}
-        <CommandGroup heading="Разделы">
-          {SECTION_LINKS.map((s) => (
+        <CommandGroup heading={t('palette.sections')}>
+          {sectionLinks.map((s) => (
             <CommandItem key={s.href} onSelect={() => scrollToSection(s.href)}>
               <Compass className="mr-2 h-4 w-4" />
               {s.label}
@@ -209,7 +209,7 @@ export function CommandPalette() {
           return (
             <div key={cat.id}>
               <CommandSeparator />
-              <CommandGroup heading={`${cat.label} · ${cat.items.length}`}>
+              <CommandGroup heading={`${lang === 'en' ? cat.labelEn : cat.label} · ${cat.items.length}`}>
                 {cat.items.map((item) => (
                   <CommandItem
                     key={item.path}
@@ -236,7 +236,7 @@ export function CommandPalette() {
         <CommandSeparator />
         <div className="flex items-center gap-2 px-4 py-2 text-[11px] text-muted-foreground">
           <Search className="h-3 w-3" />
-          Палитра открывается по{' '}
+          {t('palette.footer')}{' '}
           <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
             ⌘K
           </kbd>
