@@ -115,7 +115,7 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <SectionHeading
-            index="03"
+            index="04"
             className="mb-0 max-w-2xl flex-1"
             title="Установка"
             description="Три способа начать: скопировать файлы, подключить хуки или просто перенять workflow."

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Command, Keyboard, ArrowDown, ArrowUp, CornerDownLeft, MousePointerClick, X, Star } from 'lucide-react';
+import { Command, Keyboard, ArrowDown, CornerDownLeft, MousePointerClick, ListChecks, X, Star } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ const SHORTCUTS: ShortcutRow[] = [
   { keys: ['⌘', 'K'], label: 'Палитра команд — быстрый поиск по всем конфигам', icon: <Command className="h-3.5 w-3.5" /> },
   { keys: ['?'], label: 'Этот справочник горячих клавиш', icon: <Keyboard className="h-3.5 w-3.5" /> },
   { keys: ['j', 'k'], label: 'Навигация по списку каталога (vim-стиль)', icon: <MousePointerClick className="h-3.5 w-3.5" /> },
+  { keys: ['j', 'k'], label: 'Навигация по палитре — когда фокус вне поиска', icon: <ListChecks className="h-3.5 w-3.5" /> },
   { keys: ['↑', '↓'], label: 'То же самое стрелками', icon: <ArrowDown className="h-3.5 w-3.5" /> },
   { keys: ['Enter'], label: 'Открыть выбранный конфиг', icon: <CornerDownLeft className="h-3.5 w-3.5" /> },
   { keys: ['★'], label: 'Клик по звёздочке — в избранное (персистится)', icon: <Star className="h-3.5 w-3.5" /> },

@@ -41,7 +41,7 @@ export function ToolkitPrinciples() {
     <section id="principles" className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
-          index="04"
+          index="05"
           className="mb-10 max-w-2xl"
           title="Важные принципы"
           description="Из практики референс-репозитория: что работает в продакшене, а что выглядит хорошо только в README."

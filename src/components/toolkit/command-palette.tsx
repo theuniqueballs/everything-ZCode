@@ -45,6 +45,7 @@ const CATEGORY_ICONS: Record<ToolkitCategoryId, typeof Bot> = {
 
 const SECTION_LINKS = [
   { href: '#catalog', label: 'Каталог конфигов' },
+  { href: '#stats', label: 'Аналитика тулкита' },
   { href: '#concepts', label: 'Ключевые концепты' },
   { href: '#install', label: 'Установка' },
   { href: '#principles', label: 'Принципы' },
@@ -77,6 +78,41 @@ export function CommandPalette() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [setPaletteOpen]);
+
+  /*
+   * Vim-style j/k navigation inside the palette. Active only when the focus
+   * is NOT in the search input (so typing letters still works); translates
+   * j/k into ArrowDown/ArrowUp and dispatches onto the cmdk root.
+   */
+  useEffect(() => {
+    if (!paletteOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key !== 'j' && key !== 'k') return;
+      const root = document.querySelector('[cmdk-root]');
+      if (!root) return;
+      e.preventDefault();
+      root.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: key === 'j' ? 'ArrowDown' : 'ArrowUp',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [paletteOpen]);
 
   const openConfig = (path: string) => {
     setPaletteOpen(false);

@@ -56,7 +56,7 @@ export function ToolkitConcepts() {
     <section id="concepts" className="border-b border-border/60 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
-          index="02"
+          index="03"
           className="mb-10 max-w-2xl"
           title="Ключевые концепты"
           description="Шесть идей, на которых построен тулкит. Они важнее отдельных файлов — файлы меняются, принципы остаются."
