@@ -111,6 +111,31 @@ const DICT: Record<string, Entry> = {
     en: 'Download all category files as a ZIP archive',
   },
   'catalog.favOnly': { ru: 'Показаны только избранные конфиги ({n})', en: 'Showing favorites only ({n})' },
+  'catalog.collection': { ru: 'Коллекция избранного', en: 'Favorites collection' },
+  'catalog.colCount': { ru: '{n} шт.', en: '{n}' },
+  'catalog.colNew': { ru: 'Новая коллекция', en: 'New collection' },
+  'catalog.colRename': { ru: 'Переименовать коллекцию', en: 'Rename collection' },
+  'catalog.colDelete': { ru: 'Удалить коллекцию', en: 'Delete collection' },
+  'catalog.colDialogTitleCreate': { ru: 'Новая коллекция избранного', en: 'New favorites collection' },
+  'catalog.colDialogTitleRename': { ru: 'Переименовать коллекцию', en: 'Rename collection' },
+  'catalog.colDialogDescCreate': {
+    ru: 'Звёздочка ★ добавляет конфиг в активную коллекцию — переключайтесь между наборами в любой момент.',
+    en: 'Starring a config adds it to the active collection — switch between sets any time.',
+  },
+  'catalog.colDialogDescRename': {
+    ru: 'Введите новое название для активной коллекции.',
+    en: 'Enter a new name for the active collection.',
+  },
+  'catalog.colNamePh': { ru: 'Название коллекции', en: 'Collection name' },
+  'catalog.colCreate': { ru: 'Создать', en: 'Create' },
+  'catalog.colSave': { ru: 'Сохранить', en: 'Save' },
+  'catalog.colCancel': { ru: 'Отмена', en: 'Cancel' },
+  'catalog.colDeleteTitle': { ru: 'Удалить коллекцию «{name}»?', en: 'Delete collection “{name}”?' },
+  'catalog.colDeleteDesc': {
+    ru: 'Будет удалена подборка из {n} конфиг(ов). Сами конфиги останутся в тулките. Действие необратимо.',
+    en: 'The curated list of {n} config(s) will be removed. The configs themselves stay in the toolkit. This cannot be undone.',
+  },
+  'catalog.colDeleteConfirm': { ru: 'Удалить', en: 'Delete' },
   'catalog.import': { ru: 'Импорт', en: 'Import' },
   'catalog.importTitle': {
     ru: 'Импортировать избранное из JSON (экспорт этого сайта или массив путей)',
@@ -149,6 +174,7 @@ const DICT: Record<string, Entry> = {
 
   /* ---- Item actions ---- */
   'item.copyLink': { ru: 'Скопировать ссылку на конфиг', en: 'Copy config link' },
+  'item.copyOg': { ru: 'Скопировать OG-ссылку (картинка-превью для соцсетей)', en: 'Copy OG link (social preview image)' },
   'item.favAdd': { ru: 'В избранное', en: 'Add to favorites' },
   'item.favRemove': { ru: 'Убрать из избранного', en: 'Remove from favorites' },
   'item.done': { ru: 'Готово', en: 'Done' },
@@ -162,6 +188,11 @@ const DICT: Record<string, Entry> = {
   'toast.copied': { ru: 'Скопировано в буфер обмена', en: 'Copied to clipboard' },
   'toast.copyFailed': { ru: 'Не удалось скопировать', en: 'Failed to copy' },
   'toast.linkCopied': { ru: 'Ссылка на конфиг скопирована', en: 'Config link copied' },
+  'toast.ogCopied': { ru: 'OG-ссылка с картинкой-превью скопирована', en: 'OG preview image link copied' },
+  'toast.colCreated': { ru: 'Коллекция «{name}» создана и активирована', en: 'Collection “{name}” created and activated' },
+  'toast.colRenamed': { ru: 'Коллекция переименована в «{name}»', en: 'Collection renamed to “{name}”' },
+  'toast.colDeleted': { ru: 'Коллекция «{name}» удалена', en: 'Collection “{name}” deleted' },
+  'toast.colExists': { ru: 'Коллекция с таким названием уже существует (или название пустое)', en: 'A collection with this name already exists (or the name is empty)' },
   'toast.linkCopyFailed': { ru: 'Не удалось скопировать ссылку', en: 'Failed to copy the link' },
   'toast.downloaded': { ru: 'Скачано: {name}', en: 'Downloaded: {name}' },
   'toast.importInvalid': {

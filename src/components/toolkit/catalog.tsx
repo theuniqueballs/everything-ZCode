@@ -44,6 +44,10 @@ import {
   MousePointerClick,
   Rows2,
   Rows3,
+  ImageIcon,
+  FolderPlus,
+  PenLine,
+  Trash2,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
@@ -51,6 +55,23 @@ import { Highlight } from './highlight';
 import { SectionHeading } from './section-heading';
 import { Hint } from './hint';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { parseFrontmatter, formatBytes } from '@/lib/frontmatter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -271,6 +292,15 @@ function ItemActions({
       toast.error(t('toast.linkCopyFailed'));
     }
   };
+  const shareOg = async () => {
+    const url = `${window.location.origin}/api/og?item=${encodeURIComponent(item.path)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t('toast.ogCopied'));
+    } catch {
+      toast.error(t('toast.linkCopyFailed'));
+    }
+  };
   return (
     <div className="flex items-center gap-2">
       <Hint label={t('item.copyLink')}>
@@ -282,6 +312,17 @@ function ItemActions({
           onClick={share}
         >
           <Link2 className="h-3.5 w-3.5 transition-colors" />
+        </Button>
+      </Hint>
+      <Hint label={t('item.copyOg')}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0 transition-colors"
+          aria-label={t('item.copyOg')}
+          onClick={shareOg}
+        >
+          <ImageIcon className="h-3.5 w-3.5 transition-colors" />
         </Button>
       </Hint>
       <Hint label={isFavorite ? t('item.favRemove') : t('item.favAdd')}>
@@ -332,9 +373,24 @@ export function ToolkitCatalogSection() {
   const [favOnly, setFavOnly] = useState(false);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [mobilePreview, setMobilePreview] = useState(false);
+  const [colDialog, setColDialog] = useState<'create' | 'rename' | null>(null);
+  const [colName, setColName] = useState('');
+  const [colDeleteOpen, setColDeleteOpen] = useState(false);
   const isMobile = useIsMobile();
   const { copiedPath, copy } = useCopy();
-  const { favorites, isFavorite, toggle: toggleFavorite, importMany } = useFavorites();
+  const {
+    favorites,
+    isFavorite,
+    toggle: toggleFavorite,
+    importMany,
+    collectionNames,
+    collectionsMap,
+    activeCollection,
+    selectCollection,
+    createCollection,
+    renameCollection,
+    deleteCollection,
+  } = useFavorites();
   const { recent, push: pushRecent, clear: clearRecent } = useRecent();
   const { density, toggle: toggleDensity } = useDensity();
   const {
@@ -590,6 +646,31 @@ export function ToolkitCatalogSection() {
       .catch(() => toast.error(translate(getLang(), 'toast.copyFailed')));
   };
 
+  /* ---- Collections management ---- */
+  const submitCollectionDialog = () => {
+    const trimmed = colName.trim();
+    if (colDialog === 'create') {
+      if (createCollection(trimmed)) {
+        toast.success(t('toast.colCreated', { name: trimmed }));
+      } else {
+        toast.error(t('toast.colExists'));
+      }
+    } else if (colDialog === 'rename') {
+      if (renameCollection(activeCollection, trimmed)) {
+        toast.success(t('toast.colRenamed', { name: trimmed }));
+      } else {
+        toast.error(t('toast.colExists'));
+      }
+    }
+    setColDialog(null);
+  };
+  const confirmDeleteCollection = () => {
+    const name = activeCollection;
+    deleteCollection(name);
+    toast.success(t('toast.colDeleted', { name }));
+    setColDeleteOpen(false);
+  };
+
   /* Store-driven flows from the command palette */
   useEffect(() => {
     if (!requestPath || allItems.length === 0) return;
@@ -769,9 +850,67 @@ export function ToolkitCatalogSection() {
           )}
           {favOnly && !activeCategory && (
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Star className="h-3.5 w-3.5 fill-current text-yellow-400" />
-                {t('catalog.favOnly', { n: favorites.length })}
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 shrink-0 fill-current text-yellow-400" />
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {t('catalog.favOnly', { n: favorites.length })}
+                </span>
+                {/* Collections: switch / create / rename / delete */}
+                <Select value={activeCollection} onValueChange={selectCollection}>
+                  <SelectTrigger
+                    aria-label={t('catalog.collection')}
+                    className="h-7 w-auto gap-1 rounded-md border-border bg-card px-2.5 text-xs font-medium"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {collectionNames.map((name) => (
+                      <SelectItem key={name} value={name} className="text-xs">
+                        {name}
+                        <span className="ml-2 text-[10px] text-muted-foreground">
+                          {t('catalog.colCount', { n: (collectionsMap[name] ?? []).length })}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Hint label={t('catalog.colNew')}>
+                  <button
+                    type="button"
+                    aria-label={t('catalog.colNew')}
+                    onClick={() => {
+                      setColName('');
+                      setColDialog('create');
+                    }}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  >
+                    <FolderPlus className="h-3.5 w-3.5" />
+                  </button>
+                </Hint>
+                <Hint label={t('catalog.colRename')}>
+                  <button
+                    type="button"
+                    aria-label={t('catalog.colRename')}
+                    onClick={() => {
+                      setColName(activeCollection);
+                      setColDialog('rename');
+                    }}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  >
+                    <PenLine className="h-3.5 w-3.5" />
+                  </button>
+                </Hint>
+                <Hint label={t('catalog.colDelete')}>
+                  <button
+                    type="button"
+                    aria-label={t('catalog.colDelete')}
+                    disabled={collectionNames.length <= 1}
+                    onClick={() => setColDeleteOpen(true)}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </Hint>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <input
@@ -1065,6 +1204,80 @@ export function ToolkitCatalogSection() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Collection create / rename dialog */}
+      <Dialog
+        open={colDialog !== null}
+        onOpenChange={(open) => !open && setColDialog(null)}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {colDialog === 'create'
+                ? t('catalog.colDialogTitleCreate')
+                : t('catalog.colDialogTitleRename')}
+            </DialogTitle>
+            <DialogDescription>
+              {colDialog === 'create'
+                ? t('catalog.colDialogDescCreate')
+                : t('catalog.colDialogDescRename')}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitCollectionDialog();
+            }}
+            className="flex flex-col gap-4"
+          >
+            <Input
+              value={colName}
+              onChange={(e) => setColName(e.target.value)}
+              placeholder={t('catalog.colNamePh')}
+              aria-label={t('catalog.colNamePh')}
+              maxLength={48}
+              autoFocus
+              onFocus={(e) => e.target.select()}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setColDialog(null)}
+              >
+                {t('catalog.colCancel')}
+              </Button>
+              <Button type="submit" size="sm" disabled={colName.trim().length === 0}>
+                {colDialog === 'create' ? t('catalog.colCreate') : t('catalog.colSave')}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Collection delete confirmation */}
+      <AlertDialog open={colDeleteOpen} onOpenChange={setColDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('catalog.colDeleteTitle', { name: activeCollection })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('catalog.colDeleteDesc', { n: favorites.length })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('catalog.colCancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCollection}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('catalog.colDeleteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

@@ -55,6 +55,20 @@ export function ConfigOfTheDay({
     setOffset((prev) => Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, prev + delta)));
   }, []);
 
+  /** ←/→ anywhere inside the section navigates neighbouring days. */
+  const onSectionKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        go(1);
+      }
+    },
+    [go],
+  );
+
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ru-RU', {
@@ -90,7 +104,11 @@ export function ConfigOfTheDay({
   const isToday = offset === 0;
 
   return (
-    <section aria-label={t('day.aria')} className="border-b border-border/60 bg-primary/[0.04]">
+    <section
+      aria-label={t('day.aria')}
+      onKeyDown={onSectionKeyDown}
+      className="border-b border-border/60 bg-primary/[0.04]"
+    >
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <div className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-primary/25 bg-card/80 shadow-sm transition-all hover:border-primary/45 hover:shadow-md sm:flex-row sm:items-center sm:gap-5">
           {/* Decorative gradient wash (pure CSS, pointer-events-none) */}
@@ -117,7 +135,7 @@ export function ConfigOfTheDay({
                     aria-label={t('day.prevDay')}
                     onClick={() => go(-1)}
                     disabled={offset <= -MAX_OFFSET}
-                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-30"
+                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-30"
                   >
                     <ChevronLeft className="h-3.5 w-3.5" />
                   </button>
@@ -131,7 +149,7 @@ export function ConfigOfTheDay({
                     aria-label={t('day.nextDay')}
                     onClick={() => go(1)}
                     disabled={offset >= MAX_OFFSET}
-                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-30"
+                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-30"
                   >
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
@@ -149,7 +167,7 @@ export function ConfigOfTheDay({
                           type="button"
                           aria-label={t('day.backToToday')}
                           onClick={() => setOffset(0)}
-                          className="ml-0.5 flex h-5 w-5 items-center justify-center rounded text-primary/80 transition-colors hover:bg-primary/10 hover:text-primary"
+                          className="ml-0.5 flex h-5 w-5 items-center justify-center rounded text-primary/80 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                         >
                           <RotateCcw className="h-3 w-3" />
                         </button>
