@@ -8,7 +8,8 @@ import { toast } from 'sonner';
 import { Check, Copy, Download, FolderDown, Package, Terminal, FileArchive } from 'lucide-react';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 import { downloadItemsZip } from '@/lib/zip';
-import { Reveal, StaggerGroup, StaggerItem } from './motion-primitives';
+import { StaggerGroup, StaggerItem } from './motion-primitives';
+import { SectionHeading } from './section-heading';
 
 const STEPS = [
   {
@@ -112,13 +113,13 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
   return (
     <section id="install" className="border-b border-border/60 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Установка</h2>
-            <p className="mt-3 text-muted-foreground">
-              Три способа начать: скопировать файлы, подключить хуки или просто перенять workflow.
-            </p>
-          </div>
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <SectionHeading
+            index="03"
+            className="mb-0 max-w-2xl flex-1"
+            title="Установка"
+            description="Три способа начать: скопировать файлы, подключить хуки или просто перенять workflow."
+          />
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" className="gap-2" onClick={downloadAll} disabled={!catalog}>
               <Download className="h-4 w-4" />
@@ -133,7 +134,7 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
               Весь тулкит (ZIP)
             </Button>
           </div>
-        </Reveal>
+        </div>
 
         <StaggerGroup className="grid gap-4 lg:grid-cols-3">
           {STEPS.map((step) => (

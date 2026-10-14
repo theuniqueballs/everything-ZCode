@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BrainCircuit, Wrench, Puzzle } from 'lucide-react';
 import { Reveal, StaggerGroup, StaggerItem } from './motion-primitives';
+import { SectionHeading } from './section-heading';
 
 const PRINCIPLES = [
   {
@@ -39,13 +40,12 @@ export function ToolkitPrinciples() {
   return (
     <section id="principles" className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mb-10 max-w-2xl">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Важные принципы</h2>
-          <p className="mt-3 text-muted-foreground">
-            Из практики референс-репозитория: что работает в продакшене, а что выглядит хорошо
-            только в README.
-          </p>
-        </Reveal>
+        <SectionHeading
+          index="04"
+          className="mb-10 max-w-2xl"
+          title="Важные принципы"
+          description="Из практики референс-репозитория: что работает в продакшене, а что выглядит хорошо только в README."
+        />
 
         <StaggerGroup className="grid gap-4 md:grid-cols-3">
           {PRINCIPLES.map((p) => (

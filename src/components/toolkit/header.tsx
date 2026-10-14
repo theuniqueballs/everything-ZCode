@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Moon, Sun, Github, Terminal, Command } from 'lucide-react';
+import { Moon, Sun, Github, Terminal, Command, Keyboard } from 'lucide-react';
 import { useUiStore } from '@/lib/store';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -18,6 +18,7 @@ const NAV = [
 export function ToolkitHeader() {
   const { resolvedTheme, setTheme } = useTheme();
   const setPaletteOpen = useUiStore((s) => s.setPaletteOpen);
+  const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
   const progressRef = useRef<HTMLDivElement>(null);
 
   /* Scroll progress bar — direct DOM write via rAF, no re-renders. */
@@ -86,8 +87,22 @@ export function ToolkitHeader() {
             </kbd>
           </button>
           <Badge variant="outline" className="hidden font-mono text-[11px] text-primary sm:inline-flex">
-            v1.2
+            v1.3
           </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                aria-label="Горячие клавиши (?)"
+                onClick={() => setShortcutsOpen(true)}
+              >
+                <Keyboard className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Горячие клавиши — ?</TooltipContent>
+          </Tooltip>
           <a
             href="https://github.com/worldflowai/everything-claude-code"
             target="_blank"

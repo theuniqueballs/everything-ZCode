@@ -22,6 +22,15 @@ interface UiState {
   /** Shared catalog cache so the palette doesn't re-fetch. */
   catalog: ToolkitCatalog | null;
   setCatalog: (catalog: ToolkitCatalog | null) => void;
+  /** Compare dialog (diff between two configs). */
+  compareOpen: boolean;
+  compareInitPath: string | null;
+  /** Open compare with an optional pre-filled base config. */
+  openCompare: (path?: string | null) => void;
+  setCompareOpen: (open: boolean) => void;
+  /** Keyboard shortcuts cheat-sheet (?) */
+  shortcutsOpen: boolean;
+  setShortcutsOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -35,4 +44,10 @@ export const useUiStore = create<UiState>((set) => ({
   triggerFavorites: () => set((s) => ({ requestFavorites: s.requestFavorites + 1 })),
   catalog: null,
   setCatalog: (catalog) => set({ catalog }),
+  compareOpen: false,
+  compareInitPath: null,
+  openCompare: (path) => set({ compareInitPath: path ?? null, compareOpen: true }),
+  setCompareOpen: (compareOpen) => set({ compareOpen }),
+  shortcutsOpen: false,
+  setShortcutsOpen: (shortcutsOpen) => set({ shortcutsOpen }),
 }));

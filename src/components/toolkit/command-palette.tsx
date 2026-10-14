@@ -17,6 +17,8 @@ import {
   Star,
   Compass,
   FileArchive,
+  GitCompareArrows,
+  Keyboard,
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -52,8 +54,16 @@ const SECTION_LINKS = [
  * ⌘K command palette: jump to sections, search every config, quick actions.
  */
 export function CommandPalette() {
-  const { paletteOpen, setPaletteOpen, setRequestPath, triggerRandom, triggerFavorites, catalog } =
-    useUiStore();
+  const {
+    paletteOpen,
+    setPaletteOpen,
+    setRequestPath,
+    triggerRandom,
+    triggerFavorites,
+    catalog,
+    openCompare,
+    setShortcutsOpen,
+  } = useUiStore();
   const { resolvedTheme, setTheme } = useTheme();
 
   /* Global hotkey: Cmd/Ctrl + K */
@@ -113,6 +123,15 @@ export function CommandPalette() {
           <CommandItem
             onSelect={() => {
               setPaletteOpen(false);
+              openCompare(null);
+            }}
+          >
+            <GitCompareArrows className="mr-2 h-4 w-4" />
+            Сравнить два конфига (diff)
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              setPaletteOpen(false);
               if (catalog) {
                 const all = catalog.categories.flatMap((c) => c.items);
                 downloadItemsZip(all, 'everything-zcode-toolkit.zip');
@@ -121,6 +140,10 @@ export function CommandPalette() {
           >
             <FileArchive className="mr-2 h-4 w-4" />
             Скачать весь тулкит (ZIP)
+          </CommandItem>
+          <CommandItem onSelect={() => { setPaletteOpen(false); setShortcutsOpen(true); }}>
+            <Keyboard className="mr-2 h-4 w-4" />
+            Горячие клавиши
           </CommandItem>
         </CommandGroup>
 

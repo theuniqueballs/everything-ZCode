@@ -3,6 +3,9 @@ import { ToolkitHero } from '@/components/toolkit/hero';
 import { ToolkitConcepts } from '@/components/toolkit/concepts';
 import { ToolkitCatalogSection } from '@/components/toolkit/catalog';
 import { CommandPalette } from '@/components/toolkit/command-palette';
+import { CompareDialog } from '@/components/toolkit/compare-dialog';
+import { ShortcutsDialog } from '@/components/toolkit/shortcuts-dialog';
+import { BackToTop } from '@/components/toolkit/back-to-top';
 import { ToolkitInstall } from '@/components/toolkit/install';
 import { ToolkitPrinciples } from '@/components/toolkit/best-practices';
 import { ToolkitFooter } from '@/components/toolkit/footer';
@@ -33,6 +36,9 @@ export default function Home() {
       </main>
       <ToolkitFooter />
       <CommandPalette />
+      <CompareDialog />
+      <ShortcutsDialog />
+      <BackToTop />
     </div>
   );
 }

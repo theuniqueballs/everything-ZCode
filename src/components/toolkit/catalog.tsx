@@ -38,9 +38,12 @@ import {
   Link2,
   History,
   FileArchive,
+  GitCompareArrows,
 } from 'lucide-react';
 import { MarkdownViewer } from './markdown-viewer';
 import { PreviewToc } from './preview-toc';
+import { Highlight } from './highlight';
+import { SectionHeading } from './section-heading';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { parseFrontmatter, formatBytes } from '@/lib/frontmatter';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -221,6 +224,7 @@ export function ToolkitCatalogSection() {
     requestRandom,
     requestFavorites,
     setPaletteOpen,
+    openCompare,
   } = useUiStore();
 
   const filteredRef = useRef<ToolkitItem[]>([]);
@@ -420,13 +424,16 @@ export function ToolkitCatalogSection() {
   return (
     <section id="catalog" className="scroll-mt-20 border-b border-border/60 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mb-8 max-w-2xl">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Каталог конфигов</h2>
-          <p className="mt-3 text-muted-foreground">
-            Все {catalog?.totalItems ?? '…'} файлов тулкита. Ищите, просматривайте, копируйте и
-            скачивайте — каждый файл готов к использованию.
-          </p>
-        </Reveal>
+        <SectionHeading
+          index="01"
+          title="Каталог конфигов"
+          description={
+            <>
+              Все {catalog?.totalItems ?? '…'} файлов тулкита. Ищите, просматривайте, копируйте и
+              скачивайте — каждый файл готов к использованию.
+            </>
+          }
+        />
 
         {/* Toolbar */}
         <div className="mb-6 space-y-3">
@@ -469,6 +476,17 @@ export function ToolkitCatalogSection() {
                 onClick={pickRandom}
               >
                 <Shuffle className="h-4 w-4" />
+              </Button>
+            </Hint>
+            <Hint label="Сравнить два конфига (diff)">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 shrink-0"
+                aria-label="Сравнить два конфига"
+                onClick={() => openCompare(selected?.path ?? null)}
+              >
+                <GitCompareArrows className="h-4 w-4" />
               </Button>
             </Hint>
           </div>
@@ -692,13 +710,17 @@ export function ToolkitCatalogSection() {
                           </span>
                           <div className="min-w-0 flex-1">
                             <div className="flex min-w-0 items-center gap-2">
-                              <span className="min-w-0 truncate font-mono text-sm font-semibold">
-                                {item.name}
-                              </span>
+                              <Highlight
+                                text={item.name}
+                                query={query}
+                                className="min-w-0 truncate font-mono text-sm font-semibold"
+                              />
                             </div>
-                            <p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">
-                              {item.description}
-                            </p>
+                            <Highlight
+                              text={item.description}
+                              query={query}
+                              className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground"
+                            />
                             <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground/70">
                               <span className="min-w-0 truncate font-mono">{item.path}</span>
                               <span>·</span>

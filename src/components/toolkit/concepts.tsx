@@ -9,7 +9,8 @@ import {
   Gauge,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Reveal, StaggerGroup, StaggerItem } from './motion-primitives';
+import { StaggerGroup, StaggerItem } from './motion-primitives';
+import { SectionHeading } from './section-heading';
 
 const CONCEPTS = [
   {
@@ -54,13 +55,12 @@ export function ToolkitConcepts() {
   return (
     <section id="concepts" className="border-b border-border/60 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mb-10 max-w-2xl">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Ключевые концепты</h2>
-          <p className="mt-3 text-muted-foreground">
-            Шесть идей, на которых построен тулкит. Они важнее отдельных файлов — файлы меняются,
-            принципы остаются.
-          </p>
-        </Reveal>
+        <SectionHeading
+          index="02"
+          className="mb-10 max-w-2xl"
+          title="Ключевые концепты"
+          description="Шесть идей, на которых построен тулкит. Они важнее отдельных файлов — файлы меняются, принципы остаются."
+        />
 
         <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CONCEPTS.map((c) => (

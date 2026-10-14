@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/toolkit/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Everything ZCode — конфиги для ZCode / Z.ai",
-  description:
-    "Полная коллекция production-ready конфигов для ZCode / Z.ai: агенты, команды, скиллы, правила, хуки и контексты для продуктивной AI-разработки с моделями GLM.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s · Everything ZCode",
+  },
+  description: SITE_DESCRIPTION,
   keywords: [
     "ZCode",
     "Z.ai",
@@ -28,6 +32,9 @@ export const metadata: Metadata = {
     "Next.js",
     "AI development",
   ],
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
@@ -35,8 +42,19 @@ export const metadata: Metadata = {
     title: "Everything ZCode",
     description:
       "Агенты, команды, скиллы, правила и хуки для ZCode / Z.ai — конфиги из реальной разработки.",
+    url: "/",
     siteName: "Everything ZCode",
+    locale: "ru_RU",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Everything ZCode",
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowDown, Bot, Boxes, FileCode2, Sparkles, Scale, Webhook, Layers } from 'lucide-react';
+import { AnimatedCounter } from './animated-counter';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 
 const CATEGORY_ICONS = {
@@ -89,7 +90,9 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
                     className="group rounded-xl border border-border/70 bg-card/60 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card"
                   >
                     <Icon className="mx-auto mb-2 h-5 w-5 text-primary transition-transform group-hover:scale-110" />
-                    <div className="text-2xl font-bold tabular-nums">{cat.items.length}</div>
+                    <div className="text-2xl font-bold">
+                      <AnimatedCounter value={cat.items.length} />
+                    </div>
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">{cat.label}</div>
                   </a>
                 );
@@ -104,7 +107,13 @@ export function ToolkitHero({ catalog }: { catalog: ToolkitCatalog | null }) {
         </motion.div>
 
         <motion.p {...enter(0.4)} className="mt-4 text-center text-xs text-muted-foreground">
-          {catalog ? `${total} файлов · 7 категорий · MIT license` : 'Загрузка каталога…'}
+          {catalog ? (
+            <>
+              <AnimatedCounter value={total} /> файлов · 7 категорий · MIT license
+            </>
+          ) : (
+            'Загрузка каталога…'
+          )}
         </motion.p>
       </div>
     </section>
