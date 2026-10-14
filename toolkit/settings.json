@@ -1,0 +1,56 @@
+{
+  "$schema": "https://zcode.dev/schemas/settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(bun run lint)",
+      "Bash(bun run db:push)",
+      "Bash(bun run db:generate)",
+      "Bash(tail *)",
+      "Bash(node *)",
+      "Read(**)",
+      "Grep(**)",
+      "Glob(**)"
+    ],
+    "deny": [
+      "Bash(*next build*)",
+      "Bash(*rm -rf /*)",
+      "Bash(*git push --force*)",
+      "Read(.env*)",
+      "Read(**/.env*)"
+    ]
+  },
+  "hooks": "hooks/hooks.json",
+  "env": {
+    "WORKLOG_PATH": "/home/z/my-project/worklog.md"
+  },
+  "modelPreferences": {
+    "default": "glm-4.6",
+    "lightTasks": "glm-4.5-air",
+    "notes": "Use light model for doc/worklog agents; main model for code."
+  },
+  "mcpServers": {
+    "zai-search": {
+      "command": "z-ai",
+      "args": ["mcp", "serve", "--function", "web_search"],
+      "description": "Web search via Z.ai"
+    },
+    "zai-page-reader": {
+      "command": "z-ai",
+      "args": ["mcp", "serve", "--function", "page_reader"],
+      "description": "Webpage content extraction via Z.ai"
+    }
+  },
+  "contextFiles": [
+    "contexts/dev.md",
+    "contexts/review.md",
+    "contexts/research.md"
+  ],
+  "rules": [
+    "rules/security.md",
+    "rules/coding-style.md",
+    "rules/testing.md",
+    "rules/git-workflow.md",
+    "rules/agents.md",
+    "rules/context-management.md"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "everything-zcode",
+  "version": "1.0.0",
+  "description": "The complete collection of ZCode / Z.ai configs — agents, commands, skills, rules, hooks for productive AI-assisted development",
+  "author": "Everything ZCode contributors",
+  "license": "MIT",
+  "keywords": ["zcode", "z.ai", "glm", "agents", "skills", "hooks", "nextjs"],
+  "categories": [
+    { "id": "agents", "label": "Agents", "path": "agents/" },
+    { "id": "commands", "label": "Commands", "path": "commands/" },
+    { "id": "skills", "label": "Skills", "path": "skills/" },
+    { "id": "rules", "label": "Rules", "path": "rules/" },
+    { "id": "hooks", "label": "Hooks", "path": "hooks/" },
+    { "id": "contexts", "label": "Contexts", "path": "contexts/" },
+    { "id": "settings", "label": "Settings", "path": "settings.json" }
+  ],
+  "entry": "README.md",
+  "compatibility": {
+    "zcode": ">=1.0",
+    "models": ["glm-4.6", "glm-4.5-air", "glm-4.5-flash"]
+  }
+}

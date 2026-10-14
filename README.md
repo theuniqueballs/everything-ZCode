@@ -1,0 +1,90 @@
+<div align="center">
+
+# ⚡ Everything ZCode
+
+**Полная коллекция production-ready конфигов для ZCode / Z.ai — агенты, команды, скиллы, правила, хуки и контексты, выработанные в реальной разработке с моделями GLM.**
+
+Плюс интерактивный сайт-каталог: мгновенный поиск, ⌘K-палитра, избранное, подсветка синтаксиса, deep-links и ZIP-экспорт.
+
+[![Configs](https://img.shields.io/badge/configs-45-emerald)](#-каталог) [![Categories](https://img.shields.io/badge/categories-7-emerald)](#-каталог) [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org) [![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6)](https://bun.sh) [![License](https://img.shields.io/badge/license-MIT-emerald)](LICENSE)
+
+![Каталог Everything ZCode](docs/screenshots/catalog.png)
+
+</div>
+
+---
+
+## 🎯 Зачем
+
+[everything-claude-code](https://github.com/WorldFlowAI/everything-claude-code) собрал отличную библиотеку конфигов для Claude Code. **Everything ZCode** — это та же идея, адаптированная под реальное окружение **ZCode / Z.ai** (модели GLM): dev-логи, `agent-browser`-верификация, worklog-протокол, bun, `XTransformPort`-шлюз и SDK, работающий только на бэкенде.
+
+Каждый конфиг — не шаблон «в вакууме», а выработанная в бою практика: как ревьюить код, делать TDD, чинить сборку, управлять контекстом и держать безопасность.
+
+## 📦 Каталог
+
+| Категория | Кол-во | Что внутри |
+|---|---:|---|
+| 🤖 [Agents](toolkit/agents) | 8 | `code-reviewer`, `build-error-resolver`, `e2e-runner`, `refactor-cleaner`, `doc-updater`, `api-designer`, `ui-polisher`, `worklog-keeper` |
+| ⌨️ [Commands](toolkit/commands) | 10 | `/plan`, `/review`, `/tdd`, `/fix-build`, `/refactor`, `/verify`, `/learn`, `/checkpoint`, `/handoff`, `/ui-polish` |
+| ✨ [Skills](toolkit/skills) | 8 | `nextjs-16-patterns`, `z-ai-sdk`, `prisma-sqlite`, `shadcn-ui-theming`, `browser-verification`, `security-review`, `continuous-learning`, `context-management` |
+| 📏 [Rules](toolkit/rules) | 6 | стиль кода, работа с агентами, контекст-менеджмент, git-workflow, безопасность, тестирование |
+| 🪝 [Hooks](toolkit/hooks) | 7 | pre-bash-guard, pre-write-guard, post-edit-lint-hint, session-start, stop-checkpoint-reminder + `hooks.json` |
+| 🧠 [Contexts](toolkit/contexts) | 3 | dev, research, review |
+| ⚙️ [Settings](toolkit/settings.json) | 3 | `settings.json`, `marketplace.json`, `README` |
+
+**45 файлов** — каждый с YAML-frontmatter в формате, совместимом с everything-claude-code.
+
+## 🚀 Быстрый старт
+
+### Использовать конфиги
+
+1. Скопируйте нужные файлы из `toolkit/` в конфигурацию вашего ZCode (агенты → `.zcode/agents/`, команды → `.zcode/commands/` и т.д. — в зависимости от вашего сетапа).
+2. Или откройте сайт-каталог, найдите нужное через поиск/⌘K и нажмите **«Копировать»**.
+3. Адаптируйте под свой проект — файлы маленькие и самодокументированные.
+
+### Поднять сайт-каталог локально
+
+```bash
+bun install        # или npm install / pnpm install
+bun run dev        # http://localhost:3000
+```
+
+> Сайт читает файлы `toolkit/` напрямую через API `/api/toolkit` — добавили конфиг, он сразу появился в каталоге.
+
+## 🖥 Возможности сайта
+
+- **Поиск** по всем конфигам + фильтры по категориям, подсветка результатов
+- **⌘K-палитра** — быстрый переход к любому конфигу/действию
+- **Избранное** ★ и **недавние** — персистятся в localStorage
+- **Превью с подсветкой синтаксиса** (Prism, bash/json/ts/yaml/…) и оглавлением
+- **Deep-links** — `#item=commands/tdd.md`, ссылка на любой конфиг
+- **Экспорт**: копирование конфига/категории, скачивание файла, **ZIP всего тулкита**
+- **Клавиатура**: `j/k` / `↑↓` — навигация по списку, `⌘K` — палитра, `Enter` — открыть
+- Тёмная/светлая тема, адаптив от 375px, sticky footer, анимации
+
+![Мобильная версия](docs/screenshots/mobile.png)
+
+## 🗂 Структура
+
+```
+├── toolkit/            # 45 конфигов (агенты, команды, скиллы, правила, хуки…)
+│   ├── agents/         # 8 сабагентов
+│   ├── commands/       # 10 слэш-команд
+│   ├── skills/         # 8 скиллов
+│   ├── rules/          # 6 правил
+│   ├── hooks/          # 5 hook-скриптов + hooks.json
+│   ├── contexts/       # 3 контекста
+│   └── settings.json   # настройки + marketplace.json
+├── src/                # сайт-каталог (Next.js 16 App Router)
+│   ├── app/api/toolkit # API: чтение каталога из toolkit/
+│   └── components/     # UI каталога (shadcn/ui + Tailwind 4)
+└── prisma/             # схема БД (sqlite) для развития сайта
+```
+
+## 🙏 Благодарности
+
+Проект — форк-адаптация [**everything-claude-code**](https://github.com/WorldFlowAI/everything-claude-code) от WorldFlowAI. Идея, структура форматов (агенты/команды/хуки с frontmatter) и вдохновение — оттуда; контент переписан под окружение ZCode / Z.ai с нуля.
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 theuniqueballs. Конфиги можно свободно копировать и адаптировать — так они и написаны.
