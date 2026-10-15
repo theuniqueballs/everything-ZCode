@@ -106,7 +106,7 @@ export function ItemDetailSheet() {
               </div>
               <SimilarConfigs
                 current={item}
-                all={catalog.categories.flatMap((c) => c.items)}
+                all={catalog ? catalog.categories.flatMap((c) => c.items) : []}
                 onSelect={(path) => {
                   /* keep the sheet open — just swap the content */
                   useUiStore.getState().openDetail(path);

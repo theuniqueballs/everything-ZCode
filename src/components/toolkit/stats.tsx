@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { BarChart3, Trophy, FileCode2, Gauge } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SectionHeading } from './section-heading';
 import { AnimatedCounter } from './animated-counter';
@@ -33,11 +34,13 @@ export function ToolkitStats({ catalog }: { catalog: ToolkitCatalog | null }) {
   const top5 = [...allItems].sort((a, b) => b.lines - a.lines).slice(0, 5);
   const biggest = [...categories].sort((a, b) => b.items.length - a.items.length)[0];
 
-  const summary = [
+  /* Issue #9: явный тип вместо `as const` — union литералов без isBytes
+   * на всех членах ронял tsc (TS2339) под ignoreBuildErrors. */
+  const summary: { icon: LucideIcon; label: string; value: number; suffix: string; isBytes?: boolean }[] = [
     { icon: FileCode2, label: t('stats.totalLines'), value: totalLines, suffix: '' },
     { icon: Gauge, label: t('stats.totalSize'), value: totalBytes, suffix: '', isBytes: true },
     { icon: BarChart3, label: t('stats.avgLines'), value: avgLines, suffix: '' },
-  ] as const;
+  ];
 
   return (
     <section id="stats" className="border-b border-border/60 py-16 sm:py-20">

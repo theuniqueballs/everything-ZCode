@@ -15,9 +15,9 @@ const nextConfig: NextConfig = {
   basePath,
   trailingSlash: isStaticExport ? true : undefined,
   images: { unoptimized: isStaticExport ? true : undefined },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  /* Issue #3: type errors must fail the build — the old
+   * `ignoreBuildErrors: true` let TS2339 slip into prod silently
+   * (stats.tsx isBytes detonation, 2026-10-15). tsc --noEmit is clean. */
   reactStrictMode: false,
 };
 

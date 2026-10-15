@@ -9,7 +9,7 @@ import type { ToolkitItem } from './toolkit-types';
 const STOPWORDS = new Set([
   // ru
   'для', 'и', 'в', 'на', 'с', 'по', 'при', 'все', 'как', 'это', 'чтобы', 'или',
-  'конфиг', 'конфигов', 'файл', 'файлы', 'the', 'все',
+  'конфиг', 'конфигов', 'файл', 'файлы',
   // en
   'and', 'for', 'with', 'that', 'this', 'from', 'into', 'when', 'your', 'you',
   'are', 'not', 'but', 'can', 'has', 'have', 'will', 'each', 'any', 'all', 'use',

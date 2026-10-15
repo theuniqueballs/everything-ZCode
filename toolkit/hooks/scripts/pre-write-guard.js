@@ -17,9 +17,6 @@ process.stdin.on('end', () => {
     const warnings = [];
 
     // 1. SDK in client code — critical boundary violation
-    if (/\.tsx?$/.test(filePath) && content.includes("'use client'") === false) {
-      // server files are fine
-    }
     if (filePath && /\.tsx?$/.test(filePath) && /z-ai-web-dev-sdk/.test(content)) {
       const hasUseClient = content.split('\n').some((l) => l.trim() === "'use client'" || l.trim() === '"use client"');
       if (hasUseClient) {

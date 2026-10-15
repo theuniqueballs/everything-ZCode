@@ -174,6 +174,7 @@ const DICT: Record<string, Entry> = {
   'catalog.andOpen': { ru: 'и открывайте', en: 'and open with' },
   'catalog.lines': { ru: 'строк', en: 'lines' },
   'catalog.linesShort': { ru: 'стр.', en: 'lines' },
+  'search.inContent': { ru: 'в тексте файла', en: 'in file content' },
   'catalog.reload': { ru: 'Перезагрузить', en: 'Reload' },
   'catalog.unknownError': { ru: 'Неизвестная ошибка', en: 'Unknown error' },
 

@@ -261,6 +261,3 @@ export function CompareDialog() {
     </Dialog>
   );
 }
-
-/** Type re-export convenience for tests/tooling. */
-export type { ToolkitItem as CompareItem };

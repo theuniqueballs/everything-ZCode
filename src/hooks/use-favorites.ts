@@ -164,7 +164,7 @@ export function useFavorites() {
     mutate((d) => {
       if (d.sets[trimmed]) return d;
       created = true;
-      return { active: trimmed, sets: { ...d.sets, [trimmed]: [] } };
+      return { version: d.version, active: trimmed, sets: { ...d.sets, [trimmed]: [] } };
     });
     return created;
   }, []);
@@ -180,7 +180,7 @@ export function useFavorites() {
         sets[key === oldName ? trimmed : key] = list;
       }
       renamed = true;
-      return { active: d.active === oldName ? trimmed : d.active, sets };
+      return { version: d.version, active: d.active === oldName ? trimmed : d.active, sets };
     });
     return renamed;
   }, []);

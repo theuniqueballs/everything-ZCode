@@ -35,6 +35,8 @@ import { useUiStore } from '@/lib/store';
 import { downloadItemsZip } from '@/lib/zip';
 import { useI18n } from '@/lib/i18n';
 import { findSimilar } from '@/lib/similar';
+import { searchScore } from '@/lib/search-rank';
+import { defaultFilter } from 'cmdk';
 import { useRecent } from '@/hooks/use-recent';
 import { Highlight } from './highlight';
 import type { ToolkitCategoryId, ToolkitItem } from '@/lib/toolkit-types';
@@ -68,6 +70,31 @@ export function CommandPalette() {
   const { resolvedTheme, setTheme } = useTheme();
   const { recent } = useRecent();
   const [query, setQuery] = useState('');
+
+  /* Issue #10: ranked palette search. cmdk's default filter is fuzzy —
+   * «tdd» ranked the exact commands/tdd.md 9th behind 8 agents with fuzzy
+   * t,d,d hits in descriptions. Custom filter: config items score via the
+   * SAME searchScore as the catalog list (exact name match 120 ≫ content
+   * hit 3), everything else (actions, sections, recents) keeps the stock
+   * fuzzy behavior. cmdk re-sorts items by the returned score, so the
+   * exact match surfaces first.
+   * The score MUST be computed from the `search` argument cmdk passes —
+   * not from React `query` state, which lags one render behind cmdk's
+   * synchronous search store (pre-fix artifact: results were always one
+   * keystroke stale). */
+  const rankedFilter = useMemo(() => {
+    if (!catalog) return undefined;
+    const itemByValue = new Map<string, ToolkitItem>();
+    for (const cat of catalog.categories) {
+      for (const item of cat.items) {
+        itemByValue.set(`${item.name} ${item.description} ${item.path}`, item);
+      }
+    }
+    return (value: string, search: string, keywords?: string[]): number => {
+      const item = itemByValue.get(value);
+      return item ? searchScore(item, search) : defaultFilter(value, search, keywords);
+    };
+  }, [catalog]);
 
   /* Context: last selected config, its closest match and the similar group.
    * Falls back to the most recent config so the context survives page
@@ -169,6 +196,7 @@ export function CommandPalette() {
       open={paletteOpen}
       onOpenChange={setPaletteOpen}
       className="max-w-xl"
+      filter={rankedFilter}
     >
       <CommandInput
         placeholder={t('palette.ph')}

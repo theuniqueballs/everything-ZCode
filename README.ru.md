@@ -8,7 +8,7 @@
 
 **🌐 Сайт: [theuniqueballs.github.io/everything-ZCode](https://theuniqueballs.github.io/everything-ZCode/)**
 
-[![Deploy](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml) [![Configs](https://img.shields.io/badge/configs-45-emerald)](#-каталог) [![Categories](https://img.shields.io/badge/categories-7-emerald)](#-каталог) [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org) [![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6)](https://bun.sh) [![License](https://img.shields.io/badge/license-MIT-emerald)](LICENSE)
+[![Deploy](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml) [![Configs](https://img.shields.io/badge/configs-48-emerald)](#-каталог) [![Categories](https://img.shields.io/badge/categories-7-emerald)](#-каталог) [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org) [![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6)](https://bun.sh) [![License](https://img.shields.io/badge/license-MIT-emerald)](LICENSE)
 
 [🇬🇧 English version →](README.md)
 
@@ -31,12 +31,12 @@
 | 🤖 [Agents](toolkit/agents) | 8 | `code-reviewer`, `build-error-resolver`, `e2e-runner`, `refactor-cleaner`, `doc-updater`, `api-designer`, `ui-polisher`, `worklog-keeper` |
 | ⌨️ [Commands](toolkit/commands) | 10 | `/plan`, `/review`, `/tdd`, `/fix-build`, `/refactor`, `/verify`, `/learn`, `/checkpoint`, `/handoff`, `/ui-polish` |
 | ✨ [Skills](toolkit/skills) | 8 | `nextjs-16-patterns`, `z-ai-sdk`, `prisma-sqlite`, `shadcn-ui-theming`, `browser-verification`, `security-review`, `continuous-learning`, `context-management` |
-| 📏 [Rules](toolkit/rules) | 6 | стиль кода, работа с агентами, контекст-менеджмент, git-workflow, безопасность, тестирование |
+| 📏 [Rules](toolkit/rules) | 9 | стиль кода, работа с агентами, контекст-менеджмент, git-workflow, безопасность, тестирование, бюджет сигналов, artifact-as-source, без ретроактивных проверок |
 | 🪝 [Hooks](toolkit/hooks) | 7 | pre-bash-guard, pre-write-guard, post-edit-lint-hint, session-start, stop-checkpoint-reminder + `hooks.json` |
 | 🧠 [Contexts](toolkit/contexts) | 3 | dev, research, review |
 | ⚙️ [Settings](toolkit/settings.json) | 3 | `settings.json`, `marketplace.json`, `README` |
 
-**45 файлов** — каждый с YAML-frontmatter в формате, совместимом с everything-claude-code.
+**48 файлов** — каждый с YAML-frontmatter в формате, совместимом с everything-claude-code.
 
 ## 🚀 Быстрый старт
 
@@ -88,7 +88,7 @@ bun run dev        # http://localhost:3000
 ## 🗂 Структура
 
 ```
-├── toolkit/            # 45 конфигов (агенты, команды, скиллы, правила, хуки…)
+├── toolkit/            # 48 конфигов (агенты, команды, скиллы, правила, хуки…)
 │   ├── agents/         # 8 сабагентов
 │   ├── commands/       # 10 слэш-команд
 │   ├── skills/         # 8 скиллов

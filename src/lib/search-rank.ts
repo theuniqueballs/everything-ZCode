@@ -70,3 +70,56 @@ export function rankSearchResults<T extends ToolkitItem>(items: T[], query: stri
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map((entry) => entry.item);
 }
+
+/* ------------------------------------------------------------------ */
+/* Issue #6: match-mode visibility. A hit can come from the name (the  */
+/* bold row title), from visible metadata (path / description) or ONLY */
+/* from the file body — the last case is invisible to the user, so the */
+/* row is labeled and a snippet is shown.                              */
+/* ------------------------------------------------------------------ */
+
+export type SearchMatchKind = 'name' | 'meta' | 'content';
+
+/** Why an item matched: 'name' — name/title hit; 'meta' — path or
+ * description hit (both visible in the row); 'content' — body-only hit
+ * (invisible → needs a badge + snippet). Empty query → 'name'. */
+export function matchKind(item: ToolkitItem, query: string): SearchMatchKind {
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return 'name';
+  const name = item.name.toLowerCase();
+  const title = (item.title || '').toLowerCase();
+  const path = item.path.toLowerCase();
+  const desc = (item.description || '').toLowerCase();
+  const content = item.content.toLowerCase();
+  let sawContent = false;
+  for (const token of tokens) {
+    if (name.includes(token) || title.includes(token)) return 'name';
+    if (path.includes(token) || desc.includes(token)) {
+      // visible metadata — keep scanning remaining tokens: a later token
+      // may still hit the name, which ranks the row as a name-match
+      sawContent = sawContent || content.includes(token);
+      continue;
+    }
+    if (content.includes(token)) sawContent = true;
+  }
+  return sawContent ? 'content' : 'meta';
+}
+
+/** First content occurrence of any query token, ±radius chars, single-lined.
+ * Returns null when nothing is found in the body. */
+export function contentSnippet(item: ToolkitItem, query: string, radius = 48): string | null {
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return null;
+  const content = item.content;
+  const lower = content.toLowerCase();
+  let best: number | null = null;
+  for (const token of tokens) {
+    const idx = lower.indexOf(token);
+    if (idx >= 0 && (best === null || idx < best)) best = idx;
+  }
+  if (best === null) return null;
+  const start = Math.max(0, best - radius);
+  const end = Math.min(content.length, best + radius + Math.max(...tokens.map((t) => t.length)));
+  const raw = content.slice(start, end).replace(/\s+/g, ' ').trim();
+  return `${start > 0 ? '…' : ''}${raw}${end < content.length ? '…' : ''}`;
+}

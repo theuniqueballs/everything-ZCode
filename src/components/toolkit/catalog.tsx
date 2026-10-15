@@ -80,7 +80,7 @@ import { useUiStore } from '@/lib/store';
 import { itemHash, readItemHash, replaceItemHash } from '@/lib/deeplink';
 import { toolkitDataUrl } from '@/lib/env';
 import { downloadItemsZip, downloadFavoritesJson, parseFavoritesImport } from '@/lib/zip';
-import { rankSearchResults, searchScore } from '@/lib/search-rank';
+import { rankSearchResults, searchScore, matchKind, contentSnippet } from '@/lib/search-rank';
 import { useI18n, translate, getLang } from '@/lib/i18n';
 import { SimilarConfigs } from './similar-configs';
 import { Reveal } from './motion-primitives';
@@ -126,6 +126,9 @@ const CatalogItemRow = memo(function CatalogItemRow({
   const { t } = useI18n();
   const Icon = CATEGORY_ICONS[item.category];
   const compact = density === 'compact';
+  /* Issue #6: label body-only matches (invisible otherwise) + show where. */
+  const matchIsContent = query.trim().length >= 2 && matchKind(item, query) === 'content';
+  const snippet = matchIsContent ? contentSnippet(item, query) : null;
   return (
     <div
       role="button"
@@ -173,6 +176,16 @@ const CatalogItemRow = memo(function CatalogItemRow({
                 {item.lines}
               </span>
             )}
+            {matchIsContent && (
+              <Badge
+                variant="outline"
+                title={snippet ?? undefined}
+                className="shrink-0 gap-1 border-primary/30 bg-primary/10 px-1.5 py-0 text-[9px] font-medium text-primary"
+              >
+                <FileText className="h-2.5 w-2.5" />
+                {t('search.inContent')}
+              </Badge>
+            )}
           </div>
           {!compact && (
             <>
@@ -181,6 +194,11 @@ const CatalogItemRow = memo(function CatalogItemRow({
                 query={query}
                 className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground"
               />
+              {snippet && (
+                <p className="mt-1 line-clamp-2 break-words rounded-md border border-primary/20 bg-primary/5 px-2 py-1 font-mono text-[10px] leading-relaxed text-primary/90">
+                  {snippet}
+                </p>
+              )}
               <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground/70">
                 <span className="min-w-0 truncate font-mono">{item.path}</span>
                 <span>·</span>

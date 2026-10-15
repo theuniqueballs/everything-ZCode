@@ -8,7 +8,7 @@ Plus an interactive catalog website: instant ranked search, ⌘K palette, favori
 
 **🌐 Live site: [theuniqueballs.github.io/everything-ZCode](https://theuniqueballs.github.io/everything-ZCode/)**
 
-[![Deploy](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml) [![Configs](https://img.shields.io/badge/configs-45-emerald)](#-catalog) [![Categories](https://img.shields.io/badge/categories-7-emerald)](#-catalog) [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org) [![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6)](https://bun.sh) [![License](https://img.shields.io/badge/license-MIT-emerald)](LICENSE)
+[![Deploy](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/theuniqueballs/everything-ZCode/actions/workflows/deploy-pages.yml) [![Configs](https://img.shields.io/badge/configs-48-emerald)](#-catalog) [![Categories](https://img.shields.io/badge/categories-7-emerald)](#-catalog) [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org) [![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6)](https://bun.sh) [![License](https://img.shields.io/badge/license-MIT-emerald)](LICENSE)
 
 [🇷🇺 Русская версия →](README.ru.md)
 
@@ -31,12 +31,12 @@ Every config is battle-tested practice, not a template in a vacuum: how to revie
 | 🤖 [Agents](toolkit/agents) | 8 | `code-reviewer`, `build-error-resolver`, `e2e-runner`, `refactor-cleaner`, `doc-updater`, `api-designer`, `ui-polisher`, `worklog-keeper` |
 | ⌨️ [Commands](toolkit/commands) | 10 | `/plan`, `/review`, `/tdd`, `/fix-build`, `/refactor`, `/verify`, `/learn`, `/checkpoint`, `/handoff`, `/ui-polish` |
 | ✨ [Skills](toolkit/skills) | 8 | `nextjs-16-patterns`, `z-ai-sdk`, `prisma-sqlite`, `shadcn-ui-theming`, `browser-verification`, `security-review`, `continuous-learning`, `context-management` |
-| 📏 [Rules](toolkit/rules) | 6 | code style, agent delegation, context management, git workflow, security, testing |
+| 📏 [Rules](toolkit/rules) | 9 | code style, agent delegation, context management, git workflow, security, testing, tier budget, artifact-as-source, no retroactive checks |
 | 🪝 [Hooks](toolkit/hooks) | 7 | pre-bash-guard, pre-write-guard, post-edit-lint-hint, session-start, stop-checkpoint-reminder + `hooks.json` |
 | 🧠 [Contexts](toolkit/contexts) | 3 | dev, research, review |
 | ⚙️ [Settings](toolkit/settings.json) | 3 | `settings.json`, `marketplace.json`, `README` |
 
-**45 files** — each with YAML frontmatter in a format compatible with everything-claude-code.
+**48 files** — each with YAML frontmatter in a format compatible with everything-claude-code.
 
 ## 🚀 Quick start
 
@@ -87,7 +87,7 @@ The site deploys to **GitHub Pages** automatically via [`.github/workflows/deplo
 ## 🗂 Structure
 
 ```
-├── toolkit/            # 45 configs (agents, commands, skills, rules, hooks…)
+├── toolkit/            # 48 configs (agents, commands, skills, rules, hooks…)
 │   ├── agents/         # 8 subagents
 │   ├── commands/       # 10 slash commands
 │   ├── skills/         # 8 skills
