@@ -69,6 +69,7 @@ The site deploys to **GitHub Pages** automatically via [`.github/workflows/deplo
 - **Bilingual UI (RU/EN)** — toggle in the header, persisted choice, `<html lang>` kept in sync; the whole UI is translated, including toasts, dialogs and shortcuts
 - **⌘K palette** — jump to any config or action
 - **Slide-out detail sheet** — click any config (in the catalog, the config of the day, the palette or a deep link) and a readable panel slides out: full contents, table of contents, copy/download/share actions, similar configs and a link to the file on GitHub
+- **Use in web chat** — agents, skills, rules and contexts convert to a paste-ready prompt for SuperZ (chat.z.ai) or any web chat: open a config → the chat button → copy the generated prompt; commands convert as templates (placeholders are manual), hooks/settings stay CLI-only; the dialog also shows the native ZCode install path (`~/.zcode/agents|skills|commands`, `AGENTS.md`)
 - **Config of the day** — deterministic daily pick (Europe/Moscow calendar, changes at MSK midnight) + **date carousel**: ←/→ arrows (mouse and keyboard) browse yesterday's/tomorrow's configs and beyond, with relative labels («Yesterday», «in 5 days»), a back-to-today button and an in-place detail view — no surprise page jumps
 - **Toolkit analytics** — category distribution, top-5 largest configs, aggregates
 - **Favorites** ★ and **recents** — persisted in localStorage; favorites support **named collections** (create/switch/rename/delete) and **JSON import/export**

@@ -14,12 +14,15 @@ import {
   Download,
   Link2,
   ImageIcon,
+  MessagesSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatBytes } from '@/lib/frontmatter';
 import { itemHash } from '@/lib/deeplink';
 import { IS_STATIC_EXPORT } from '@/lib/env';
 import { useI18n } from '@/lib/i18n';
+import { canUseInChat } from '@/lib/webchat';
+import { UseInChatDialog } from './use-in-chat-dialog';
 import type { ToolkitItem } from '@/lib/toolkit-types';
 import { cn } from '@/lib/utils';
 
@@ -91,6 +94,7 @@ export function ItemActions({
   const { t } = useI18n();
   const { copiedPath, copy } = useCopy();
   const copied = copiedPath === item.path;
+  const [chatOpen, setChatOpen] = useState(false);
 
   const share = async () => {
     const url = `${window.location.origin}${window.location.pathname}${itemHash(item.path)}`;
@@ -112,7 +116,7 @@ export function ItemActions({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Hint label={t('item.copyLink')}>
         <Button
           size="sm"
@@ -134,6 +138,19 @@ export function ItemActions({
             onClick={shareOg}
           >
             <ImageIcon className="h-3.5 w-3.5 transition-colors" />
+          </Button>
+        </Hint>
+      )}
+      {canUseInChat(item.category) && (
+        <Hint label={t('item.useInChat')}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0 transition-colors"
+            aria-label={t('item.useInChat')}
+            onClick={() => setChatOpen(true)}
+          >
+            <MessagesSquare className="h-3.5 w-3.5 transition-colors" />
           </Button>
         </Hint>
       )}
@@ -174,6 +191,8 @@ export function ItemActions({
           {t('item.download')}
         </Button>
       </Hint>
+
+      <UseInChatDialog item={item} open={chatOpen} onOpenChange={setChatOpen} />
     </div>
   );
 }

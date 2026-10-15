@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Check, Copy, Download, FolderDown, Package, Terminal, FileArchive } from 'lucide-react';
+import { Check, Copy, Download, FolderDown, Package, Terminal, FileArchive, MessagesSquare } from 'lucide-react';
 import type { ToolkitCatalog } from '@/lib/toolkit-types';
 import { downloadItemsZip } from '@/lib/zip';
 import { toolkitDataUrl } from '@/lib/env';
@@ -198,6 +198,29 @@ export function ToolkitInstall({ catalog }: { catalog: ToolkitCatalog | null }) 
             </StaggerItem>
           ))}
         </StaggerGroup>
+
+        {/* Web-chat path: configs also work in SuperZ (chat.z.ai) via a paste-ready prompt */}
+        <Card className="mt-4 border-primary/25 bg-primary/[0.04]">
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <MessagesSquare className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold leading-snug">{t('install.chat.title')}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {t('install.chat.desc')}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="shrink-0 gap-2 border-primary/40"
+              onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <MessagesSquare className="h-4 w-4" />
+              {t('install.chat.toCatalog')}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

@@ -189,6 +189,41 @@ const DICT: Record<string, Entry> = {
   'item.copyConfig': { ru: 'Скопировать конфиг', en: 'Copy config' },
   'item.download': { ru: 'Скачать', en: 'Download' },
   'item.downloadName': { ru: 'Скачать {name}', en: 'Download {name}' },
+  'item.useInChat': {
+    ru: 'Использовать в веб-чате (chat.z.ai и другие)',
+    en: 'Use in a web chat (chat.z.ai and others)',
+  },
+
+  /* ---- Use-in-chat dialog ---- */
+  'chat.title': { ru: 'Конфиг → промпт для веб-чата', en: 'Config → web-chat prompt' },
+  'chat.badgeFull': { ru: 'полная совместимость', en: 'full compatibility' },
+  'chat.badgePartial': { ru: 'шаблон команды', en: 'command template' },
+  'chat.noteFull': {
+    ru: 'Этот тип конфига полностью переносится в веб-чат промптом — поведение сохранится.',
+    en: 'This config type fully carries over to a web chat as a prompt — the behaviour is preserved.',
+  },
+  'chat.notePartial': {
+    ru: 'Это шаблон команды: подставь свои значения вместо плейсхолдеров перед отправкой.',
+    en: 'This is a command template: replace the placeholders with real values before sending.',
+  },
+  'chat.step1': {
+    ru: 'Открой chat.z.ai (режим агента) или любой другой веб-чат',
+    en: 'Open chat.z.ai (agent mode) or any other web chat',
+  },
+  'chat.step2': {
+    ru: 'Скопируй промпт ниже и отправь первым сообщением беседы — дальше общайся как обычно',
+    en: 'Copy the prompt below and send it as the first message — then just chat as usual',
+  },
+  'chat.step3': {
+    ru: 'Альтернатива — приложи сам файл конфига к сообщению (промпт надёжнее: загрузки файлов иногда игнорируются)',
+    en: 'Alternative — attach the config file itself (the prompt is more reliable: file uploads are sometimes ignored)',
+  },
+  'chat.promptLabel': { ru: 'готовый промпт', en: 'ready prompt' },
+  'chat.copyPrompt': { ru: 'Скопировать промпт', en: 'Copy prompt' },
+  'chat.openChat': { ru: 'Открыть chat.z.ai', en: 'Open chat.z.ai' },
+  'chat.native': { ru: 'Нативная установка в ZCode (CLI/IDE):', en: 'Native install in ZCode (CLI/IDE):' },
+  'chat.nativeHintPlace': { ru: 'положи файл по пути {path}', en: 'place the file at {path}' },
+  'chat.nativeHintMerge': { ru: 'содержимое слей в {path}', en: 'merge the content into {path}' },
 
   /* ---- Toasts ---- */
   'toast.copied': { ru: 'Скопировано в буфер обмена', en: 'Copied to clipboard' },
@@ -319,6 +354,15 @@ const DICT: Record<string, Entry> = {
     ru: 'Две привычки дают 80% ценности даже без установки файлов.',
     en: 'Two habits deliver 80% of the value even without installing any files.',
   },
+  'install.chat.title': {
+    ru: 'Нет ZCode под рукой? Конфиги работают и в SuperZ (chat.z.ai)',
+    en: 'No ZCode at hand? The configs also work in SuperZ (chat.z.ai)',
+  },
+  'install.chat.desc': {
+    ru: 'Конфиги писаны под ZCode, но агенты, скиллы, правила и контексты переносятся в веб-чат одним промптом: открой конфиг → кнопка «Использовать в чате» → вставь промпт первым сообщением беседы.',
+    en: 'Configs target ZCode, but agents, skills, rules and contexts carry over to a web chat with one prompt: open a config → the "Use in chat" button → paste it as the first message of the conversation.',
+  },
+  'install.chat.toCatalog': { ru: 'Выбрать конфиг', en: 'Pick a config' },
 
   /* ---- Principles ---- */
   'principles.title': { ru: 'Важные принципы', en: 'Important principles' },
